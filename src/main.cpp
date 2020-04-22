@@ -21,15 +21,22 @@
 #define FPS (30)
 #define Z (12)  // depth from camera to render
 #define FOV (450)
-#define NEST_WIDTH (9)
+#define NEST_WIDTH (5)
 const int NW_2 = NEST_WIDTH * NEST_WIDTH;
 const int NW_3 = NEST_WIDTH * NEST_WIDTH * NEST_WIDTH;
 
 struct vertex  // rendering 3D graphics
 {
-  float x;
-  float y;
-  float z;
+  double x;
+  double y;
+  double z;
+};
+
+struct angles
+{
+  double phi;
+  double theta;
+  double psi;
 };
 
 enum game_state
@@ -42,27 +49,15 @@ enum game_state
 
 struct quat
 {
-  float r;
-  float i;
-  float j;
-  float k;
+  double r;
+  double i;
+  double j;
+  double k;
 };
 
-void DrawWire(SDL_Renderer * renderer, float x1, float y1, float z1, float x2, float y2, float z2)
+float Rad(int deg)
 {
-  if (z1 <= 0 || z2 <= 0) {
-    return;
-  }
-  int center_x = WINDOW_WIDTH / 2;
-  int center_y = WINDOW_HEIGHT / 2;
-  SDL_RenderDrawLine(renderer,
-    FOV*x1/z1+center_x, FOV*y1/z1+center_y,
-    FOV*x2/z2+center_x, FOV*y2/z2+center_y);
-}
-
-void DrawWire(SDL_Renderer * renderer, vertex p1, vertex p2)
-{
-  DrawWire(renderer, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+  return (deg*PI/180.0);
 }
 
 quat QuatMul(quat p, quat q)
@@ -75,79 +70,66 @@ quat QuatMul(quat p, quat q)
   return {r, i, j, k};
 }
 
-quat ToQuaternion(float yaw, float pitch, float roll) // yaw (Z), pitch (Y), roll (X)
-{
-    // Abbreviations for the various angular functions
-    float cy = cos(yaw * 0.5);
-    float sy = sin(yaw * 0.5);
-    float cp = cos(pitch * 0.5);
-    float sp = sin(pitch * 0.5);
-    float cr = cos(roll * 0.5);
-    float sr = sin(roll * 0.5);
-
-    quat q;
-    q.r = cr * cp * cy + sr * sp * sy;
-    q.i = sr * cp * cy - cr * sp * sy;
-    q.j = cr * sp * cy + sr * cp * sy;
-    q.k = cr * cp * sy - sr * sp * cy;
-
-    return q;
-}
-
-void DrawCube(SDL_Renderer * renderer, float ox, float oy, float oz, float pitch, float yaw, float roll, int red, int grn, int blu)
+void DrawCube(SDL_Renderer * renderer, vertex o, angles a, int red, int grn, int blu)
 {
   int center_x = WINDOW_WIDTH / 2;
   int center_y = WINDOW_HEIGHT / 2;
-  int u, v;
   float x,y,z, inv_mag_p, mag_p, p_diff;
   quat p;
-  quat q = ToQuaternion(pitch, yaw, roll);
-  quat inv_q = {q.r, -q.i, -q.j, -q.k};
-  const float w = 1;
-  float space = w/NEST_WIDTH; // 1/nw * w
-  float half_width = w/2;
+
+  // todo: combine these into one quat
+  quat z_q = {cos(a.psi*0.5), 0, 0, sin(a.psi*0.5)}; // unit vector at z=1
+  quat inv_z_q = {z_q.r, -z_q.i, -z_q.j, -z_q.k};
+
+  quat y_q = {cos(a.theta*0.5), 0, sin(a.theta*0.5), 0}; // unit vector at y=1
+  quat inv_y_q = {y_q.r, -y_q.i, -y_q.j, -y_q.k};
+
+  quat x_q = {cos(a.phi*0.5), sin(a.phi*0.5), 0, 0}; // unit vector at x=1
+  quat inv_x_q = {x_q.r, -x_q.i, -x_q.j, -x_q.k};
+  const double w = 1.0;
+  double space = w/(NEST_WIDTH-1); // 1/nw * w
+  double half_width = w/2;
   SDL_Point points[NW_3];
   SDL_Point out_points[NW_3*4]; // fading points
   for (int i=0; i<NW_3; ++i) {
-    x = (i % NEST_WIDTH) * space - half_width;
-    y = ((i / NEST_WIDTH)%NEST_WIDTH) * space - half_width;
-    z = (i / (NW_2)) * space - half_width;
-    p_diff = pow(x,2)+pow(y,2)+pow(z,2);
-    mag_p = sqrt(p_diff);
-    inv_mag_p = 1/mag_p;
-    p = {0, x*inv_mag_p, y*inv_mag_p, z*inv_mag_p};
-    // printf("%f %f %f\n", x, y, z);
-    p = QuatMul(QuatMul(q, p), inv_q); // pqp^-1
-    x=p.i*mag_p+ox;
-    y=p.j*mag_p+oy;
-    z=p.k*mag_p+oz;
-    // if (x < ox-half_width || x>ox+half_width ||
-    //   y < oy-half_width || y>oy+half_width ||
-    //   z < oz-half_width || z>oz+half_width) {
+    int ind_x = (i % NEST_WIDTH);
+    int ind_y = ((i / NEST_WIDTH)%NEST_WIDTH);
+    int ind_z = (i / (NW_2));
+    bool front_face = !(ind_x && ind_y && ind_z);
+    bool back_face  = !((ind_x+1)%NEST_WIDTH && (ind_y+1)%NEST_WIDTH && (ind_z+1)%NEST_WIDTH);
+    if ( front_face || back_face){ //test if
+      x = ind_x * space - half_width;
+      y = ind_y * space - half_width;
+      z = ind_z * space - half_width;
+      p = {0, x, y, z};
+      p = QuatMul(QuatMul(z_q, p), inv_z_q); // pqp^-1
+      p = QuatMul(QuatMul(y_q, p), inv_y_q); // pqp^-1
+      p = QuatMul(QuatMul(x_q, p), inv_x_q); // pqp^-1
+      x=p.i+o.x; y=p.j+o.y; z=p.k+o.z;
 
-    // }
-    if (z>0) {
-      u = FOV*x/z+center_x;
-      v = FOV*y/z+center_y;
-      points[i] = {u, v};
-      for (int j=0; j<4; ++j){
-        out_points[4*i+j] = {u+(j%2)?-1:1, u+(j/2)?-1:1};
+      if (z>0) {
+        // TODO: clean this up, possibly replace with asset
+        double d = 0.005;
+        out_points[4*i+0] = {int((FOV*(x+d))/z+center_x), int((FOV*(y+0))/z+center_y)};
+        out_points[4*i+1] = {int((FOV*(x-d))/z+center_x), int((FOV*(y+0))/z+center_y)};
+        out_points[4*i+2] = {int((FOV*(x+0))/z+center_x), int((FOV*(y+d))/z+center_y)};
+        out_points[4*i+3] = {int((FOV*(x+0))/z+center_x), int((FOV*(y-d))/z+center_y)};
+        points[i] = {int(FOV*x/z+center_x), int(FOV*y/z+center_y)};
+      } else {
+        points[i] = {-1, -1}; // off screen
+        for (int j=0; j<4; ++j){
+          out_points[4*i+j] = {-1, -1};
+        }
+        printf("%f %f %f\n\n", x, y, z);
       }
-      points[i] = {int(FOV*x/z+center_x), int(FOV*y/z+center_y)};
-    } else {
-      points[i] = {-1, -1}; // off screen
-      for (int j=0; j<4; ++j){
-        out_points[4*i+j] = {-1, -1};
-      }
-      printf("%f %f %f\n\n", x, y, z);
     }
   }
   SDL_SetRenderDrawColor(renderer, red, grn, blu, 255);
   SDL_RenderDrawPoints(renderer, points, NW_3);
 
   // TODO: experiment with alpha channel
-  SDL_SetRenderDrawColor(renderer, 4*red/5, 4*grn/5, 4*blu/5, 255);
-  SDL_RenderDrawPoints(renderer, points, NW_3*4);
+  // SDL_SetRenderDrawColor(renderer, 2*red/5, 2*grn/5, 2*blu/5, 255);
+  // SDL_RenderDrawPoints(renderer, out_points, NW_3*4);
 }
 
 bool Collision(int target_ind, std::vector<int> nest[])
@@ -162,13 +144,15 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     std::map<int,bool> keys;
     const int INPUT_POLL_MAX = 5; // number of frames between repeated inputs
     int input_poll_t = 0; // on key down, set to max, on key up, reset to 0
+    int input_blocked = false;
 
-    float a = 0.0;
-    float b = 1.0;
-    float c = 0.0;
-    float pitch = 0.0;
-    float yaw = 0.0;
-    float roll = 0.0;
+    int phi = 0; // phi, theta and psi are in degrees
+    int theta = 0;
+    int psi = 0;
+    int target_phi = 0;
+    int target_theta = 0;
+    int target_psi = 0;
+    const int d_angle = 10;
 
     bool quit_state = false;
     bool pause_state = false;
@@ -186,32 +170,64 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
         // process input
         pause_state = keys[SDLK_ESCAPE] || keys[SDLK_p];
-        bool left = keys[SDLK_LEFT];
-        bool right = keys[SDLK_RIGHT];
-        bool down = keys[SDLK_DOWN];
         bool up__key = keys[SDLK_w] || keys[SDLK_UP];
         bool rgt_key = keys[SDLK_a] || keys[SDLK_RIGHT];
         bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
         bool lft_key = keys[SDLK_d] || keys[SDLK_LEFT];
         bool dir_key_pressed = (up__key || rgt_key || dwn_key || lft_key);
-          // input_poll_t = INPUT_POLL_MAX;
-        if (up__key) {
-          roll -= 0.2;
+        input_poll_t = INPUT_POLL_MAX;
+        if (!(abs(psi)%90) && !(abs(theta)%90) && !(abs(phi)%90)) {
+          // Logic here to make sure cube always rotates relative to the camera
+          // TODO: fix edge case, possibly replace with logic table
+          if (up__key != dwn_key) {
+            int d = 90 * (up__key ? 1 : -1);
+            int deg = (theta%360+360)%360;
+            switch (deg/90){
+              case 0: target_phi -= d; break;
+              case 1: target_psi -= d; break;
+              case 2: target_phi -= d; break;
+              case 3: target_psi += d; break;
+            }
+          }
+          if (lft_key != rgt_key) {
+            int d = 90 * (rgt_key ? 1 : -1);
+            int deg = (phi%360+360)%360;
+            switch (deg/90){
+              case 0: target_theta -= d; break;
+              case 1: target_psi += d; break;
+              case 2: target_theta += d; break;
+              case 3: target_psi -= d; break;
+            }
+          }
         }
-        if (dwn_key) {
-          roll += 0.2;
-        }
-        if (lft_key) {
-          yaw += 0.2;
-        }
-        if (rgt_key) {
-          yaw -= 0.2;
-        }
+        // TODO: make this pythonic idk
+        if (psi   < target_psi)   psi   += d_angle;
+        if (psi   > target_psi)   psi   -= d_angle;
+        if (phi   < target_phi)   phi   += d_angle;
+        if (phi   > target_phi)   phi   -= d_angle;
+        if (theta < target_theta) theta += d_angle;
+        if (theta > target_theta) theta -= d_angle;
+
         // clear the window
         SDL_RenderClear(rend);
 
-        DrawCube(rend, -1, 0, 3, pitch, yaw, roll, 0, 255, 0);
-        DrawCube(rend, 1, 0, 3, pitch, yaw, roll, 255, 0, 255);
+        angles a = {Rad(phi), Rad(theta), Rad(psi)};
+        DrawCube(rend, {-1, 0, 3}, a, 0, 255, 0);
+        DrawCube(rend, {1, 0, 3}, a, 255, 0, 255);
+
+        // debugging output
+        // std::string op = "pitch:" + std::to_string(phi%360) +
+        //                "  yaw:" + std::to_string(theta%360) +
+        //                "  roll:" + std::to_string(psi%360);
+        // std::string up__op = (up__key ? "up ":" ");
+        // std::string dwn_op = (dwn_key ? "down ":" ");
+        // std::string lft_op = (lft_key ? "left ":" ");
+        // std::string rgt_op = (rgt_key ? "right":" ");
+        // std::string op = up__op + dwn_op + lft_op + rgt_op;
+        // SDL_Surface* message = TTF_RenderText_Solid(font, op.c_str(), {255, 255, 255});
+        // SDL_Texture* message_tex = SDL_CreateTextureFromSurface(rend, message);
+        // SDL_Rect message_rect = {5, 5, message->w, message->h};
+        // SDL_RenderCopy(rend, message_tex, NULL, &message_rect);
 
         SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
         SDL_RenderPresent(rend);
