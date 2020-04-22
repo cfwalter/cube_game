@@ -32,6 +32,13 @@ struct vertex  // rendering 3D graphics
   double z;
 };
 
+struct coords // track point on 3D grid
+{
+  int x;
+  int y;
+  int z;
+};
+
 struct angles
 {
   double phi;
@@ -70,13 +77,7 @@ quat QuatMul(quat p, quat q)
   return {r, i, j, k};
 }
 
-void DrawCube(SDL_Renderer * renderer, vertex o, angles a, int red, int grn, int blu)
-{
-  int center_x = WINDOW_WIDTH / 2;
-  int center_y = WINDOW_HEIGHT / 2;
-  float x,y,z, inv_mag_p, mag_p, p_diff;
-  quat p;
-
+vertex Rotate(vertex v, angles a) {
   // todo: combine these into one quat
   quat z_q = {cos(a.psi*0.5), 0, 0, sin(a.psi*0.5)}; // unit vector at z=1
   quat inv_z_q = {z_q.r, -z_q.i, -z_q.j, -z_q.k};
@@ -86,51 +87,77 @@ void DrawCube(SDL_Renderer * renderer, vertex o, angles a, int red, int grn, int
 
   quat x_q = {cos(a.phi*0.5), sin(a.phi*0.5), 0, 0}; // unit vector at x=1
   quat inv_x_q = {x_q.r, -x_q.i, -x_q.j, -x_q.k};
+
+  quat p = {0, v.x, v.y, v.z};;
+  p = QuatMul(QuatMul(z_q, p), inv_z_q); // pqp^-1
+  p = QuatMul(QuatMul(y_q, p), inv_y_q); // pqp^-1
+  p = QuatMul(QuatMul(x_q, p), inv_x_q); // pqp^-1
+
+  return {p.i, p.j, p.k};
+}
+
+coords IndXYZ(int index, int width)
+{
+    return {(index % width), ((index / width)%width), (index / (width*width))};
+}
+
+void DrawSelect(SDL_Renderer * renderer, vertex o, angles a, int i, SDL_Texture* img)
+{
+  // TODO: remove duplicated logic with DrawCube
+  int center_x = WINDOW_WIDTH / 2;
+  int center_y = WINDOW_HEIGHT / 2;
+  float x,y,z;
+
+  const double width = 1.0;
+  double space = width/(NEST_WIDTH-1); // 1/nw * width
+  double half_width = width/2;
+  coords xyz = IndXYZ(i, NEST_WIDTH);
+  x = xyz.x * space - half_width;
+  y = xyz.y * space - half_width;
+  z = xyz.z * space - half_width;
+  vertex vert = Rotate({x, y, z}, a);
+  x=vert.x+o.x; y=vert.y+o.y; z=vert.z+o.z;
+
+  int u = FOV*x/z+center_x; int v = FOV*y/z+center_y;
+  int w, h;
+  SDL_QueryTexture(img, NULL, NULL, &w, &h);
+  SDL_Rect r = {int(u-w/z*0.5), int(v-w/z*0.5), int(w/z), int(h/z)};
+  SDL_RenderCopy(renderer, img, NULL, &r);
+}
+
+void DrawCube(SDL_Renderer * renderer, vertex o, angles a, SDL_Texture* img)
+{
+  int center_x = WINDOW_WIDTH / 2;
+  int center_y = WINDOW_HEIGHT / 2;
+  float x,y,z;
+
   const double w = 1.0;
   double space = w/(NEST_WIDTH-1); // 1/nw * w
   double half_width = w/2;
-  SDL_Point points[NW_3];
-  SDL_Point out_points[NW_3*4]; // fading points
   for (int i=0; i<NW_3; ++i) {
-    int ind_x = (i % NEST_WIDTH);
-    int ind_y = ((i / NEST_WIDTH)%NEST_WIDTH);
-    int ind_z = (i / (NW_2));
-    bool front_face = !(ind_x && ind_y && ind_z);
-    bool back_face  = !((ind_x+1)%NEST_WIDTH && (ind_y+1)%NEST_WIDTH && (ind_z+1)%NEST_WIDTH);
+    coords xyz = IndXYZ(i, NEST_WIDTH);
+    // TODO: gotta be a better way to do this logic
+    bool front_face = !(xyz.x && xyz.y && xyz.z);
+    bool back_face  = !((xyz.x+1)%NEST_WIDTH && (xyz.y+1)%NEST_WIDTH && (xyz.z+1)%NEST_WIDTH);
     if ( front_face || back_face){ //test if
-      x = ind_x * space - half_width;
-      y = ind_y * space - half_width;
-      z = ind_z * space - half_width;
-      p = {0, x, y, z};
-      p = QuatMul(QuatMul(z_q, p), inv_z_q); // pqp^-1
-      p = QuatMul(QuatMul(y_q, p), inv_y_q); // pqp^-1
-      p = QuatMul(QuatMul(x_q, p), inv_x_q); // pqp^-1
-      x=p.i+o.x; y=p.j+o.y; z=p.k+o.z;
+      x = xyz.x * space - half_width;
+      y = xyz.y * space - half_width;
+      z = xyz.z * space - half_width;
+      vertex v = Rotate({x, y, z}, a);
+      x=v.x+o.x; y=v.y+o.y; z=v.z+o.z;
 
       if (z>0) {
-        // TODO: clean this up, possibly replace with asset
-        double d = 0.005;
-        out_points[4*i+0] = {int((FOV*(x+d))/z+center_x), int((FOV*(y+0))/z+center_y)};
-        out_points[4*i+1] = {int((FOV*(x-d))/z+center_x), int((FOV*(y+0))/z+center_y)};
-        out_points[4*i+2] = {int((FOV*(x+0))/z+center_x), int((FOV*(y+d))/z+center_y)};
-        out_points[4*i+3] = {int((FOV*(x+0))/z+center_x), int((FOV*(y-d))/z+center_y)};
-        points[i] = {int(FOV*x/z+center_x), int(FOV*y/z+center_y)};
-      } else {
-        points[i] = {-1, -1}; // off screen
-        for (int j=0; j<4; ++j){
-          out_points[4*i+j] = {-1, -1};
-        }
-        printf("%f %f %f\n\n", x, y, z);
+        int u = FOV*x/z+center_x; int v = FOV*y/z+center_y;
+        int w, h;
+        SDL_QueryTexture(img, NULL, NULL, &w, &h);
+        SDL_Rect r = {int(u-w/z*0.5), int(v-w/z*0.5), int(w/z), int(h/z)};
+        SDL_RenderCopy(renderer, img, NULL, &r);
       }
     }
   }
-  SDL_SetRenderDrawColor(renderer, red, grn, blu, 255);
-  SDL_RenderDrawPoints(renderer, points, NW_3);
-
-  // TODO: experiment with alpha channel
-  // SDL_SetRenderDrawColor(renderer, 2*red/5, 2*grn/5, 2*blu/5, 255);
-  // SDL_RenderDrawPoints(renderer, out_points, NW_3*4);
 }
+
+// void DrawSelect()
 
 bool Collision(int target_ind, std::vector<int> nest[])
 {
@@ -154,8 +181,23 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     int target_psi = 0;
     const int d_angle = 10;
 
+    int i = 0;
+
     bool quit_state = false;
     bool pause_state = false;
+
+    SDL_Surface* blu_ring = IMG_Load("Resources/blu_ring.png");
+    SDL_Texture* blu_ring_tex = SDL_CreateTextureFromSurface(rend, blu_ring);
+    SDL_FreeSurface(blu_ring);
+
+    SDL_Surface* red_ring = IMG_Load("Resources/red_ring.png");
+    SDL_Texture* red_ring_tex = SDL_CreateTextureFromSurface(rend, red_ring);
+    SDL_FreeSurface(red_ring);
+
+    SDL_Surface* box = IMG_Load("Resources/box.png");
+    SDL_Texture* box_tex = SDL_CreateTextureFromSurface(rend, box);
+    SDL_FreeSurface(box);
+
     for(std::map<int,bool> keys; !(quit_state || pause_state); ) {
         // process events
         SDL_Event ev;
@@ -200,6 +242,9 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             }
           }
         }
+
+        if (keys[SDLK_j]) i -= 1;
+        if (keys[SDLK_k]) i += 1;
         // TODO: make this pythonic idk
         if (psi   < target_psi)   psi   += d_angle;
         if (psi   > target_psi)   psi   -= d_angle;
@@ -212,8 +257,9 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         SDL_RenderClear(rend);
 
         angles a = {Rad(phi), Rad(theta), Rad(psi)};
-        DrawCube(rend, {-1, 0, 3}, a, 0, 255, 0);
-        DrawCube(rend, {1, 0, 3}, a, 255, 0, 255);
+        DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
+        DrawSelect(rend, {-1, 0, 3}, a, i, box_tex);
+        DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
 
         // debugging output
         // std::string op = "pitch:" + std::to_string(phi%360) +
