@@ -15,6 +15,9 @@
 #include <SDL_ttf.h>
 #include <SDL2/SDL_mixer.h>
 
+// local imports
+#include "quat.hpp"
+
 #define WINDOW_WIDTH (640)
 #define WINDOW_HEIGHT (480)
 #define PI (3.14159)
@@ -71,45 +74,26 @@ enum game_state
   menu,
 };
 
-struct quat
-{
-  double r;
-  double i;
-  double j;
-  double k;
-};
-
 float Rad(int deg)
 {
   return (deg*PI/180.0);
 }
 
-quat QuatMul(quat p, quat q)
-{
-  // (ae-bf-cg-dh)+(af+be+ch-dg){i} +(ag-bh+ce+df){j} +(ah+bg-cf+de){k}
-  float r = p.r*q.r - p.i*q.i - p.j*q.j - p.k*q.k;
-  float i = p.r*q.i + p.i*q.r + p.j*q.k - p.k*q.j;
-  float j = p.r*q.j - p.i*q.k + p.j*q.r + p.k*q.i;
-  float k = p.r*q.k + p.i*q.j - p.j*q.i + p.k*q.r;
-  return {r, i, j, k};
-}
-
 vertex Rotate(vertex v, angles a) {
-  // todo: combine these into one quat
-  quat z_q = {cos(a.psi*0.5), 0, 0, sin(a.psi*0.5)}; // unit vector at z=1
-  quat inv_z_q = {z_q.r, -z_q.i, -z_q.j, -z_q.k};
+  // todo: combine these into one Quat
+  Quat z_q = {cos(a.psi*0.5), 0, 0, sin(a.psi*0.5)}; // unit vector at z=1
+  Quat inv_z_q = {z_q.r, -z_q.i, -z_q.j, -z_q.k};
 
-  quat y_q = {cos(a.theta*0.5), 0, sin(a.theta*0.5), 0}; // unit vector at y=1
-  quat inv_y_q = {y_q.r, -y_q.i, -y_q.j, -y_q.k};
+  Quat y_q = {cos(a.theta*0.5), 0, sin(a.theta*0.5), 0}; // unit vector at y=1
+  Quat inv_y_q = {y_q.r, -y_q.i, -y_q.j, -y_q.k};
 
-  quat x_q = {cos(a.phi*0.5), sin(a.phi*0.5), 0, 0}; // unit vector at x=1
-  quat inv_x_q = {x_q.r, -x_q.i, -x_q.j, -x_q.k};
+  Quat x_q = {cos(a.phi*0.5), sin(a.phi*0.5), 0, 0}; // unit vector at x=1
+  Quat inv_x_q = {x_q.r, -x_q.i, -x_q.j, -x_q.k};
 
-  quat p = {0, v.x, v.y, v.z};;
-  p = QuatMul(QuatMul(z_q, p), inv_z_q); // pqp^-1
-  p = QuatMul(QuatMul(y_q, p), inv_y_q); // pqp^-1
-  p = QuatMul(QuatMul(x_q, p), inv_x_q); // pqp^-1
-
+  Quat p = {0, v.x, v.y, v.z};
+  p = z_q * p * inv_z_q;
+  p = y_q * p * inv_y_q;
+  p = x_q * p * inv_x_q;
   return {p.i, p.j, p.k};
 }
 
@@ -270,7 +254,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     SDL_Texture* red_ring_tex = SDL_CreateTextureFromSurface(rend, red_ring);
     SDL_FreeSurface(red_ring);
 
-    SDL_Surface* box = IMG_Load("Resources/box.png");
+    SDL_Surface* box = IMG_Load("Resources/open_box.png");
     SDL_Texture* box_tex = SDL_CreateTextureFromSurface(rend, box);
     SDL_FreeSurface(box);
 
