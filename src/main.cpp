@@ -45,7 +45,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     const int WIDTH = 5;
     Cube play_cube = Cube({0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
 
-    Selector select = Selector(0);
+    Selector select = Selector(0, &play_cube);
 
     bool quit_state = false;
     bool pause_state = false;
@@ -96,7 +96,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
           if (rgt_key) dir = direction::right;
           if (dwn_key) dir = direction::down;
           if (lft_key) dir = direction::left;
-          rotate_cube = select.move(play_cube.get_heading_rads(), dir, play_cube.get_width());
+          rotate_cube = select.move(dir);
           // rotate_cube = MoveTarget(&select_index, {Rad(phi), Rad(theta), Rad(psi)}, dir);
           dir_key_dirty = true;
         }
@@ -113,7 +113,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
         // DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
         play_cube.draw(rend, blu_ring_tex);
-        select.draw(rend, play_cube.get_origin(), play_cube.get_heading_rads(), play_cube.get_width(), box_tex);
+        select.draw(rend, box_tex);
         // DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
 
         // debugging output

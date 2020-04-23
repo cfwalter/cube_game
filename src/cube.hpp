@@ -193,23 +193,26 @@ class Selector {
 private:
     int index;
     bool holding;
+    Cube* cube;
 public :
-    inline Selector(int i) {index=i; holding=false;};
+    inline Selector(int i, Cube* c) {index=i; holding=false; cube=c;};
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     inline bool is_holding() {return holding;}
     inline void set_holding(bool h) {holding=h;}
-    void render() const;
-    direction move(angles a, direction dir, int width);
-    void draw(SDL_Renderer * renderer, vertex o, angles a, int cube_w, SDL_Texture* img);
+    direction move(direction dir);
+    void draw(SDL_Renderer * renderer, SDL_Texture* img);
 };
 
-void Selector::draw(SDL_Renderer * renderer, vertex o, angles a, int cube_w, SDL_Texture* img)
+void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
 {
   // TODO: remove duplicated logic with DrawCube
   int center_x = WINDOW_WIDTH / 2;
   int center_y = WINDOW_HEIGHT / 2;
   float x,y,z;
+  const vertex o = cube->get_origin();
+  const angles a = cube->get_heading_rads();
+  const int cube_w = cube->get_width();
 
   const double width = 1.0;
   double space = width/(cube_w-1); // 1/nw * width
@@ -228,14 +231,16 @@ void Selector::draw(SDL_Renderer * renderer, vertex o, angles a, int cube_w, SDL
   SDL_RenderCopy(renderer, img, NULL, &r);
 }
 
-direction Selector::move(angles a, direction dir, int width)
+direction Selector::move(direction dir)
 {
     // get rotations of x,y,z with current angle, to see which way is up/down and left/right
+    const angles a = cube->get_heading_rads();
     vertex rot_x = Rotate({1,0,0}, a);
     vertex rot_y = Rotate({0,1,0}, a);
     vertex rot_z = Rotate({0,0,1}, a);
     axis u_axis, v_axis; // u=left/right, v=up/down
     int lft_u, rgt_u, top_v, bot_v;
+    const int width = cube->get_width();
     const int max = width-1;
 
     if (rot_x.x== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
