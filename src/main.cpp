@@ -16,55 +16,9 @@
 #include <SDL2/SDL_mixer.h>
 
 // local imports
+#include "constants.hpp"
 #include "quat.hpp"
-
-#define WINDOW_WIDTH (640)
-#define WINDOW_HEIGHT (480)
-#define PI (3.14159)
-#define FPS (30)
-#define Z (12)  // depth from camera to render
-#define FOV (450)
-#define NEST_WIDTH (5)
-const int NW_2 = NEST_WIDTH * NEST_WIDTH;
-const int NW_3 = NEST_WIDTH * NEST_WIDTH * NEST_WIDTH;
-
-struct vertex  // rendering 3D graphics
-{
-  double x;
-  double y;
-  double z;
-};
-
-struct coords // track point on 3D grid
-{
-  int x;
-  int y;
-  int z;
-};
-
-struct angles
-{
-  double phi;
-  double theta;
-  double psi;
-};
-
-enum axis
-{
-  x=0,
-  y,
-  z,
-  none,
-};
-
-enum direction
-{
-  up=0,
-  right,
-  down,
-  left,
-  null,
-};
+#include "cube.hpp"
 
 enum game_state
 {
@@ -73,148 +27,6 @@ enum game_state
   pause,
   menu,
 };
-
-float Rad(int deg)
-{
-  return (deg*PI/180.0);
-}
-
-vertex Rotate(vertex v, angles a) {
-  // todo: combine these into one Quat
-  Quat z_q = {cos(a.psi*0.5), 0, 0, sin(a.psi*0.5)}; // unit vector at z=1
-  Quat inv_z_q = {z_q.r, -z_q.i, -z_q.j, -z_q.k};
-
-  Quat y_q = {cos(a.theta*0.5), 0, sin(a.theta*0.5), 0}; // unit vector at y=1
-  Quat inv_y_q = {y_q.r, -y_q.i, -y_q.j, -y_q.k};
-
-  Quat x_q = {cos(a.phi*0.5), sin(a.phi*0.5), 0, 0}; // unit vector at x=1
-  Quat inv_x_q = {x_q.r, -x_q.i, -x_q.j, -x_q.k};
-
-  Quat p = {0, v.x, v.y, v.z};
-  p = z_q * p * inv_z_q;
-  p = y_q * p * inv_y_q;
-  p = x_q * p * inv_x_q;
-  return {p.i, p.j, p.k};
-}
-
-coords Index_to_XYZ(int index, int width)
-{
-    return {(index % width), ((index / width)%width), (index / (width*width))};
-}
-
-int XYZ_to_index(coords xyz, int width)
-{
-    return xyz.z*width*width + xyz.y*width + xyz.x;
-}
-
-void DrawSelect(SDL_Renderer * renderer, vertex o, angles a, int i, SDL_Texture* img)
-{
-  // TODO: remove duplicated logic with DrawCube
-  int center_x = WINDOW_WIDTH / 2;
-  int center_y = WINDOW_HEIGHT / 2;
-  float x,y,z;
-
-  const double width = 1.0;
-  double space = width/(NEST_WIDTH-1); // 1/nw * width
-  double half_width = width/2;
-  coords xyz = Index_to_XYZ(i, NEST_WIDTH);
-  x = xyz.x * space - half_width;
-  y = xyz.y * space - half_width;
-  z = xyz.z * space - half_width;
-  vertex vert = Rotate({x, y, z}, a);
-  x=vert.x+o.x; y=vert.y+o.y; z=vert.z+o.z;
-
-  int u = FOV*x/z+center_x; int v = FOV*y/z+center_y;
-  int w, h;
-  SDL_QueryTexture(img, NULL, NULL, &w, &h);
-  SDL_Rect r = {int(u-w/z*0.5), int(v-w/z*0.5), int(w/z), int(h/z)};
-  SDL_RenderCopy(renderer, img, NULL, &r);
-}
-
-void DrawCube(SDL_Renderer * renderer, vertex o, angles a, SDL_Texture* img)
-{
-  int center_x = WINDOW_WIDTH / 2;
-  int center_y = WINDOW_HEIGHT / 2;
-  float x,y,z;
-
-  const double w = 1.0;
-  double space = w/(NEST_WIDTH-1); // 1/nw * w
-  double half_width = w/2;
-  for (int i=0; i<NW_3; ++i) {
-    coords xyz = Index_to_XYZ(i, NEST_WIDTH);
-    // TODO: gotta be a better way to do this logic
-    bool front_face = !(xyz.x && xyz.y && xyz.z);
-    bool back_face  = !((xyz.x+1)%NEST_WIDTH && (xyz.y+1)%NEST_WIDTH && (xyz.z+1)%NEST_WIDTH);
-    if ( front_face || back_face){ //test if
-      x = xyz.x * space - half_width;
-      y = xyz.y * space - half_width;
-      z = xyz.z * space - half_width;
-      vertex v = Rotate({x, y, z}, a);
-      x=v.x+o.x; y=v.y+o.y; z=v.z+o.z;
-
-      if (z>0) {
-        int u = FOV*x/z+center_x; int v = FOV*y/z+center_y;
-        int w, h;
-        SDL_QueryTexture(img, NULL, NULL, &w, &h);
-        w = w/z; h = h/z;
-        SDL_Rect r = {int(u-w*0.5), int(v-w*0.5), int(w), int(h)};
-        SDL_RenderCopy(renderer, img, NULL, &r);
-      }
-    }
-  }
-}
-
-void AddAxis(coords* xyz, int n, axis a)
-{
-  if (a==axis::x) xyz->x += n;
-  if (a==axis::y) xyz->y += n;
-  if (a==axis::z) xyz->z += n;
-}
-
-direction MoveTarget(int* index, angles a, direction dir)
-{
-  // get rotations of x,y,z with current angle, to see which way is up/down and left/right
-  vertex rot_x = Rotate({1,0,0}, a);
-  vertex rot_y = Rotate({0,1,0}, a);
-  vertex rot_z = Rotate({0,0,1}, a);
-  axis u_axis, v_axis; // u=left/right, v=up/down
-  int lft_u, rgt_u, top_v, bot_v;
-  const int max = NEST_WIDTH-1;
-
-  if (rot_x.x== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
-  if (rot_x.x==-1) {u_axis=axis::x; lft_u=max; rgt_u=0;}
-  if (rot_y.x== 1) {u_axis=axis::y; lft_u=0;   rgt_u=max;}
-  if (rot_y.x==-1) {u_axis=axis::y; lft_u=max; rgt_u=0;}
-  if (rot_z.x== 1) {u_axis=axis::z; lft_u=0;   rgt_u=max;}
-  if (rot_z.x==-1) {u_axis=axis::z; lft_u=max; rgt_u=0;}
-
-  if (rot_x.y== 1) {v_axis=axis::x; top_v=0;   bot_v=max;}
-  if (rot_x.y==-1) {v_axis=axis::x; top_v=max; bot_v=0;}
-  if (rot_y.y== 1) {v_axis=axis::y; top_v=0;   bot_v=max;}
-  if (rot_y.y==-1) {v_axis=axis::y; top_v=max; bot_v=0;}
-  if (rot_z.y== 1) {v_axis=axis::z; top_v=0;   bot_v=max;}
-  if (rot_z.y==-1) {v_axis=axis::z; top_v=max; bot_v=0;}
-
-  int du = (rgt_u - lft_u) / (max);
-  int dv = (bot_v - top_v) / (max);
-
-  coords curr_xyz = Index_to_XYZ(*index, NEST_WIDTH);
-  switch(dir) {
-    case direction::up:    AddAxis(&curr_xyz, -dv, v_axis); break;
-    case direction::down:  AddAxis(&curr_xyz,  dv, v_axis); break;
-    case direction::left:  AddAxis(&curr_xyz, -du, u_axis); break;
-    case direction::right: AddAxis(&curr_xyz,  du, u_axis); break;
-    case direction::null: break;
-  }
-  bool out_x = curr_xyz.x < 0 || curr_xyz.x > max;
-  bool out_y = curr_xyz.y < 0 || curr_xyz.y > max;
-  bool out_z = curr_xyz.z < 0 || curr_xyz.z > max;
-  if (out_x || out_y || out_z) {
-    return dir;
-  }
-  *index = XYZ_to_index(curr_xyz, NEST_WIDTH);
-  return direction::null;
-}
 
 bool Collision(int target_ind, std::vector<int> nest[])
 {
@@ -230,15 +42,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     int input_poll_t = 0; // on key down, set to max, on key up, reset to 0
     int input_blocked = false;
 
-    int phi = 0; // phi, theta and psi are in degrees
-    int theta = 0;
-    int psi = 0;
-    int target_phi = 0;
-    int target_theta = 0;
-    int target_psi = 0;
-    const int d_angle = 10;
+    const int WIDTH = 5;
+    Cube play_cube = Cube({0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
 
-    int select_index = 0;
+    Selector select = Selector(0);
 
     bool quit_state = false;
     bool pause_state = false;
@@ -283,57 +90,30 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
         input_poll_t = INPUT_POLL_MAX;
 
-        if (!(abs(psi)%90) && !(abs(theta)%90) && !(abs(phi)%90) && dir_key_pressed && !dir_key_dirty) {
+        if (play_cube.is_heading_square() && dir_key_pressed && !dir_key_dirty) {
           direction dir;
           if (up__key) dir = direction::up;
           if (rgt_key) dir = direction::right;
           if (dwn_key) dir = direction::down;
           if (lft_key) dir = direction::left;
-          rotate_cube = MoveTarget(&select_index, {Rad(phi), Rad(theta), Rad(psi)}, dir);
+          rotate_cube = select.move(play_cube.get_heading_rads(), dir, play_cube.get_width());
+          // rotate_cube = MoveTarget(&select_index, {Rad(phi), Rad(theta), Rad(psi)}, dir);
           dir_key_dirty = true;
         }
 
-        if (!(abs(psi)%90) && !(abs(theta)%90) && !(abs(phi)%90) && rotate_cube != direction::null) {
-          // Logic here to make sure cube always rotates relative to the camera
-          // TODO: fix edge case, possibly replace with logic table
-          if (rotate_cube == direction::up || rotate_cube == direction::down) {
-            int d = 90 * (rotate_cube == direction::down ? 1 : -1);
-            int deg = (theta%360+360)%360;
-            switch (deg/90){
-              case 0: target_phi -= d; break;
-              case 1: target_psi -= d; break;
-              case 2: target_phi -= d; break;
-              case 3: target_psi += d; break;
-            }
-          }
-          if (rotate_cube == direction::left || rotate_cube == direction::right) {
-            int d = 90 * (rotate_cube == direction::left ? 1 : -1);
-            int deg = (phi%360+360)%360;
-            switch (deg/90){
-              case 0: target_theta -= d; break;
-              case 1: target_psi += d; break;
-              case 2: target_theta += d; break;
-              case 3: target_psi -= d; break;
-            }
-          }
+        if (play_cube.is_heading_square() && rotate_cube != direction::null) {
+          play_cube.rotate(rotate_cube);
           rotate_cube = direction::null;
         }
 
-        // TODO: make this pythonic idk
-        if (psi   < target_psi)   psi   += d_angle;
-        if (psi   > target_psi)   psi   -= d_angle;
-        if (phi   < target_phi)   phi   += d_angle;
-        if (phi   > target_phi)   phi   -= d_angle;
-        if (theta < target_theta) theta += d_angle;
-        if (theta > target_theta) theta -= d_angle;
+        play_cube.update();
 
         // clear the window
         SDL_RenderClear(rend);
 
-        angles a = {Rad(phi), Rad(theta), Rad(psi)};
         // DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
-        DrawCube(rend, {0, 0, 2}, a, blu_ring_tex);
-        DrawSelect(rend, {0, 0, 2}, a, select_index, box_tex);
+        play_cube.draw(rend, blu_ring_tex);
+        select.draw(rend, play_cube.get_origin(), play_cube.get_heading_rads(), play_cube.get_width(), box_tex);
         // DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
 
         // debugging output
@@ -478,8 +258,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::vector<int> player_nest[NW_3];
-    std::vector<int> target_nest[NW_3];
+    std::vector<int> player_nest[0];
+    std::vector<int> target_nest[0];
     int current_ind = 0;
 
     game_state state = game_state::play;

@@ -1,6 +1,8 @@
+#ifndef QUAT_HPP
+#define QUAT_HPP
+
 struct Quat
 {
-
     double r;
     double i;
     double j;
@@ -16,3 +18,5 @@ struct Quat
         return {r, i, j, k};
     };
 };
+
+#endif
