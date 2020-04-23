@@ -46,6 +46,23 @@ struct angles
   double psi;
 };
 
+enum axis
+{
+  x=0,
+  y,
+  z,
+  none,
+};
+
+enum direction
+{
+  up=0,
+  right,
+  down,
+  left,
+  null,
+};
+
 enum game_state
 {
   quit=0,
@@ -96,9 +113,14 @@ vertex Rotate(vertex v, angles a) {
   return {p.i, p.j, p.k};
 }
 
-coords IndXYZ(int index, int width)
+coords Index_to_XYZ(int index, int width)
 {
     return {(index % width), ((index / width)%width), (index / (width*width))};
+}
+
+int XYZ_to_index(coords xyz, int width)
+{
+    return xyz.z*width*width + xyz.y*width + xyz.x;
 }
 
 void DrawSelect(SDL_Renderer * renderer, vertex o, angles a, int i, SDL_Texture* img)
@@ -111,7 +133,7 @@ void DrawSelect(SDL_Renderer * renderer, vertex o, angles a, int i, SDL_Texture*
   const double width = 1.0;
   double space = width/(NEST_WIDTH-1); // 1/nw * width
   double half_width = width/2;
-  coords xyz = IndXYZ(i, NEST_WIDTH);
+  coords xyz = Index_to_XYZ(i, NEST_WIDTH);
   x = xyz.x * space - half_width;
   y = xyz.y * space - half_width;
   z = xyz.z * space - half_width;
@@ -135,7 +157,7 @@ void DrawCube(SDL_Renderer * renderer, vertex o, angles a, SDL_Texture* img)
   double space = w/(NEST_WIDTH-1); // 1/nw * w
   double half_width = w/2;
   for (int i=0; i<NW_3; ++i) {
-    coords xyz = IndXYZ(i, NEST_WIDTH);
+    coords xyz = Index_to_XYZ(i, NEST_WIDTH);
     // TODO: gotta be a better way to do this logic
     bool front_face = !(xyz.x && xyz.y && xyz.z);
     bool back_face  = !((xyz.x+1)%NEST_WIDTH && (xyz.y+1)%NEST_WIDTH && (xyz.z+1)%NEST_WIDTH);
@@ -157,7 +179,57 @@ void DrawCube(SDL_Renderer * renderer, vertex o, angles a, SDL_Texture* img)
   }
 }
 
-// void DrawSelect()
+void AddAxis(coords* xyz, int n, axis a)
+{
+  if (a==axis::x) xyz->x += n;
+  if (a==axis::y) xyz->y += n;
+  if (a==axis::z) xyz->z += n;
+}
+
+direction MoveTarget(int* index, angles a, direction dir)
+{
+  // get rotations of x,y,z with current angle, to see which way is up/down and left/right
+  vertex rot_x = Rotate({1,0,0}, a);
+  vertex rot_y = Rotate({0,1,0}, a);
+  vertex rot_z = Rotate({0,0,1}, a);
+  axis u_axis, v_axis; // u=left/right, v=up/down
+  int lft_u, rgt_u, top_v, bot_v;
+  const int max = NEST_WIDTH-1;
+
+  if (rot_x.x== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
+  if (rot_x.x==-1) {u_axis=axis::x; lft_u=max; rgt_u=0;}
+  if (rot_y.x== 1) {u_axis=axis::y; lft_u=0;   rgt_u=max;}
+  if (rot_y.x==-1) {u_axis=axis::y; lft_u=max; rgt_u=0;}
+  if (rot_z.x== 1) {u_axis=axis::z; lft_u=0;   rgt_u=max;}
+  if (rot_z.x==-1) {u_axis=axis::z; lft_u=max; rgt_u=0;}
+
+  if (rot_x.y== 1) {v_axis=axis::x; top_v=0;   bot_v=max;}
+  if (rot_x.y==-1) {v_axis=axis::x; top_v=max; bot_v=0;}
+  if (rot_y.y== 1) {v_axis=axis::y; top_v=0;   bot_v=max;}
+  if (rot_y.y==-1) {v_axis=axis::y; top_v=max; bot_v=0;}
+  if (rot_z.y== 1) {v_axis=axis::z; top_v=0;   bot_v=max;}
+  if (rot_z.y==-1) {v_axis=axis::z; top_v=max; bot_v=0;}
+
+  int du = (rgt_u - lft_u) / (max);
+  int dv = (bot_v - top_v) / (max);
+
+  coords curr_xyz = Index_to_XYZ(*index, NEST_WIDTH);
+  switch(dir) {
+    case direction::up:    AddAxis(&curr_xyz, -dv, v_axis); break;
+    case direction::down:  AddAxis(&curr_xyz,  dv, v_axis); break;
+    case direction::left:  AddAxis(&curr_xyz, -du, u_axis); break;
+    case direction::right: AddAxis(&curr_xyz,  du, u_axis); break;
+    case direction::null: break;
+  }
+  bool out_x = curr_xyz.x < 0 || curr_xyz.x > max;
+  bool out_y = curr_xyz.y < 0 || curr_xyz.y > max;
+  bool out_z = curr_xyz.z < 0 || curr_xyz.z > max;
+  if (out_x || out_y || out_z) {
+    return dir;
+  }
+  *index = XYZ_to_index(curr_xyz, NEST_WIDTH);
+  return direction::null;
+}
 
 bool Collision(int target_ind, std::vector<int> nest[])
 {
@@ -181,10 +253,13 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     int target_psi = 0;
     const int d_angle = 10;
 
-    int i = 0;
+    int select_index = 0;
 
     bool quit_state = false;
     bool pause_state = false;
+    bool dir_key_dirty = false;
+
+    direction rotate_cube = direction::null;
 
     SDL_Surface* blu_ring = IMG_Load("Resources/blu_ring.png");
     SDL_Texture* blu_ring_tex = SDL_CreateTextureFromSurface(rend, blu_ring);
@@ -217,12 +292,27 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
         bool lft_key = keys[SDLK_d] || keys[SDLK_LEFT];
         bool dir_key_pressed = (up__key || rgt_key || dwn_key || lft_key);
+        if (!(up__key || rgt_key || dwn_key || lft_key)) {
+          dir_key_dirty = false;
+        }
+
         input_poll_t = INPUT_POLL_MAX;
-        if (!(abs(psi)%90) && !(abs(theta)%90) && !(abs(phi)%90)) {
+
+        if (!(abs(psi)%90) && !(abs(theta)%90) && !(abs(phi)%90) && dir_key_pressed && !dir_key_dirty) {
+          direction dir;
+          if (up__key) dir = direction::up;
+          if (rgt_key) dir = direction::right;
+          if (dwn_key) dir = direction::down;
+          if (lft_key) dir = direction::left;
+          rotate_cube = MoveTarget(&select_index, {Rad(phi), Rad(theta), Rad(psi)}, dir);
+          dir_key_dirty = true;
+        }
+
+        if (!(abs(psi)%90) && !(abs(theta)%90) && !(abs(phi)%90) && rotate_cube != direction::null) {
           // Logic here to make sure cube always rotates relative to the camera
           // TODO: fix edge case, possibly replace with logic table
-          if (up__key != dwn_key) {
-            int d = 90 * (up__key ? 1 : -1);
+          if (rotate_cube == direction::up || rotate_cube == direction::down) {
+            int d = 90 * (rotate_cube == direction::down ? 1 : -1);
             int deg = (theta%360+360)%360;
             switch (deg/90){
               case 0: target_phi -= d; break;
@@ -231,8 +321,8 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
               case 3: target_psi += d; break;
             }
           }
-          if (lft_key != rgt_key) {
-            int d = 90 * (rgt_key ? 1 : -1);
+          if (rotate_cube == direction::left || rotate_cube == direction::right) {
+            int d = 90 * (rotate_cube == direction::left ? 1 : -1);
             int deg = (phi%360+360)%360;
             switch (deg/90){
               case 0: target_theta -= d; break;
@@ -241,10 +331,9 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
               case 3: target_psi -= d; break;
             }
           }
+          rotate_cube = direction::null;
         }
 
-        if (keys[SDLK_j]) i -= 1;
-        if (keys[SDLK_k]) i += 1;
         // TODO: make this pythonic idk
         if (psi   < target_psi)   psi   += d_angle;
         if (psi   > target_psi)   psi   -= d_angle;
@@ -258,7 +347,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
         angles a = {Rad(phi), Rad(theta), Rad(psi)};
         DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
-        DrawSelect(rend, {-1, 0, 3}, a, i, box_tex);
+        DrawSelect(rend, {-1, 0, 3}, a, select_index, box_tex);
         DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
 
         // debugging output
