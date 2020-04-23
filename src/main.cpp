@@ -172,7 +172,8 @@ void DrawCube(SDL_Renderer * renderer, vertex o, angles a, SDL_Texture* img)
         int u = FOV*x/z+center_x; int v = FOV*y/z+center_y;
         int w, h;
         SDL_QueryTexture(img, NULL, NULL, &w, &h);
-        SDL_Rect r = {int(u-w/z*0.5), int(v-w/z*0.5), int(w/z), int(h/z)};
+        w = w/z; h = h/z;
+        SDL_Rect r = {int(u-w*0.5), int(v-w*0.5), int(w), int(h)};
         SDL_RenderCopy(renderer, img, NULL, &r);
       }
     }
@@ -346,9 +347,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         SDL_RenderClear(rend);
 
         angles a = {Rad(phi), Rad(theta), Rad(psi)};
-        DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
-        DrawSelect(rend, {-1, 0, 3}, a, select_index, box_tex);
-        DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
+        // DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
+        DrawCube(rend, {0, 0, 2}, a, blu_ring_tex);
+        DrawSelect(rend, {0, 0, 2}, a, select_index, box_tex);
+        // DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
 
         // debugging output
         // std::string op = "pitch:" + std::to_string(phi%360) +
