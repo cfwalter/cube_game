@@ -7,10 +7,11 @@ private:
     int index;
     int old_index;
     bool holding;
-    bool between;
+    const int move_frames_total = 10;
+    int move_frame;
     Cube* cube;
 public :
-    inline Selector(int i, Cube* c) {index=i; holding=false; cube=c;};
+    inline Selector(int i, Cube* c) {index=i; holding=false; cube=c; move_frame=0;};
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     inline bool is_holding() {return holding;}
@@ -24,13 +25,15 @@ void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
     int center_x = WINDOW_WIDTH / 2;
     int center_y = WINDOW_HEIGHT / 2;
     vertex vert = this->cube->index_to_vertex(this->index);
-    if (this->between) {
+    if (this->move_frame) {
         vertex old_vert = this->cube->index_to_vertex(this->old_index);
-        vert.x = (vert.x + old_vert.x) / 2;
-        vert.y = (vert.y + old_vert.y) / 2;
-        vert.z = (vert.z + old_vert.z) / 2;
-        between = false;
+        float dist = 1 - float(this->move_frame) / this->move_frames_total;
+        vert.x -= (vert.x - old_vert.x) * dist;
+        vert.y -= (vert.y - old_vert.y) * dist;
+        vert.z -= (vert.z - old_vert.z) * dist;
+        this->move_frame += 1;
     }
+    if (this->move_frame == this->move_frames_total) { this->move_frame = 0; }
 
     int u = FOV*vert.x/vert.z+center_x;
     int v = FOV*vert.y/vert.z+center_y;
@@ -42,6 +45,7 @@ void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
 
 direction Selector::move(direction dir)
 {
+    if (this->move_frame) {return direction::null;}  //don't collect input during move animation
     // get rotations of x,y,z with current angle, to see which way is up/down and left/right
     const angles a = this->cube->get_heading_rads();
     vertex rot_x = Rotate({1,0,0}, a);
@@ -85,7 +89,7 @@ direction Selector::move(direction dir)
     }
     this->old_index = this->index;
     this->index = XYZ_to_index(curr_xyz, width);
-    this->between = true;
+    this->move_frame = 1;
     return direction::null;
 }
 

@@ -50,7 +50,6 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
     bool quit_state = false;
     bool pause_state = false;
-    bool dir_key_dirty = false;
 
     direction rotate_cube = direction::null;
 
@@ -85,13 +84,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
         bool lft_key = keys[SDLK_d] || keys[SDLK_LEFT];
         bool dir_key_pressed = (up__key || rgt_key || dwn_key || lft_key);
-        if (!(up__key || rgt_key || dwn_key || lft_key)) {
-          dir_key_dirty = false;
-        }
 
         input_poll_t = INPUT_POLL_MAX;
 
-        if (play_cube.is_heading_square() && dir_key_pressed && !dir_key_dirty) {
+        if (play_cube.is_heading_square() && dir_key_pressed) {
           direction dir;
           if (up__key) dir = direction::up;
           if (rgt_key) dir = direction::right;
@@ -99,7 +95,6 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
           if (lft_key) dir = direction::left;
           rotate_cube = select.move(dir);
           // rotate_cube = MoveTarget(&select_index, {Rad(phi), Rad(theta), Rad(psi)}, dir);
-          dir_key_dirty = true;
         }
 
         if (play_cube.is_heading_square() && rotate_cube != direction::null) {
