@@ -19,23 +19,24 @@
 #include "constants.hpp"
 #include "quat.hpp"
 #include "cube.hpp"
+#include "selector.hpp"
 
 enum game_state
 {
-  quit=0,
-  play,
-  pause,
-  menu,
+    quit=0,
+    play,
+    pause,
+    menu,
 };
 
 bool Collision(int target_ind, std::vector<int> nest[])
 {
-  // return nest[ind].size() > 0;
-  return true;
+    // return nest[ind].size() > 0;
+    return true;
 }
 
 game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
-  std::vector<int> player_nest[], std::vector<int> target_nest[], int* current_ind)
+    std::vector<int> player_nest[], std::vector<int> target_nest[], int* current_ind)
 {
     std::map<int,bool> keys;
     const int INPUT_POLL_MAX = 5; // number of frames between repeated inputs

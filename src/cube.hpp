@@ -114,6 +114,8 @@ public:
     };
     void rotate(direction dir);
     void update();
+    vertex coords_to_vertex(coords xyz);
+    vertex index_to_vertex(int index);
     void draw(SDL_Renderer * renderer, SDL_Texture* img);
 };
 
@@ -156,127 +158,48 @@ void Cube::update()
 
 void Cube::draw(SDL_Renderer * renderer, SDL_Texture* img)
 {
-  int center_x = WINDOW_WIDTH / 2;
-  int center_y = WINDOW_HEIGHT / 2;
-  float x,y,z;
-  vertex o = origin;
-  angles a = this->get_heading_rads();
+    const int center_x = WINDOW_WIDTH / 2;
+    const int center_y = WINDOW_HEIGHT / 2;
 
-  const double w = 1.0;
-  double space = w/(width-1); // 1/nw * w
-  double half_width = w/2;
-  for (int i=0; i<pow(width,3); ++i) {
-    coords xyz = Index_to_XYZ(i, width);
-    // TODO: gotta be a better way to do this logic
-    bool front_face = !(xyz.x && xyz.y && xyz.z);
-    bool back_face  = !((xyz.x+1)%width && (xyz.y+1)%width && (xyz.z+1)%width);
-    if ( front_face || back_face){ //test if
-      x = xyz.x * space - half_width;
-      y = xyz.y * space - half_width;
-      z = xyz.z * space - half_width;
-      vertex v = Rotate({x, y, z}, a);
-      x=v.x+o.x; y=v.y+o.y; z=v.z+o.z;
+    for (int i=0; i<pow(width,3); ++i) {
+        coords xyz = Index_to_XYZ(i, width);
+        // TODO: gotta be a better way to do this logic
+        bool front_face = !(xyz.x && xyz.y && xyz.z);
+        bool back_face  = !((xyz.x+1)%width && (xyz.y+1)%width && (xyz.z+1)%width);
+        if ( front_face || back_face){
+            vertex vert = coords_to_vertex(xyz);
 
-      if (z>0) {
-        int u = FOV*x/z+center_x; int v = FOV*y/z+center_y;
-        int w, h;
-        SDL_QueryTexture(img, NULL, NULL, &w, &h);
-        w = w/z; h = h/z;
-        SDL_Rect r = {int(u-w*0.5), int(v-w*0.5), int(w), int(h)};
-        SDL_RenderCopy(renderer, img, NULL, &r);
-      }
+            if (vert.z>0) {
+                int u = FOV*vert.x/vert.z+center_x;
+                int v = FOV*vert.y/vert.z+center_y;
+                int w, h;
+                SDL_QueryTexture(img, NULL, NULL, &w, &h);
+                w = w/vert.z; h = h/vert.z;
+                SDL_Rect r = {int(u-w*0.5), int(v-w*0.5), int(w), int(h)};
+                SDL_RenderCopy(renderer, img, NULL, &r);
+            }
+        }
     }
-  }
 }
 
-class Selector {
-private:
-    int index;
-    bool holding;
-    Cube* cube;
-public :
-    inline Selector(int i, Cube* c) {index=i; holding=false; cube=c;};
-    inline int get_index() {return index;};
-    inline void set_index(int i) {index=i;};
-    inline bool is_holding() {return holding;}
-    inline void set_holding(bool h) {holding=h;}
-    direction move(direction dir);
-    void draw(SDL_Renderer * renderer, SDL_Texture* img);
-};
-
-void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
+vertex Cube::coords_to_vertex(coords xyz)
 {
-  // TODO: remove duplicated logic with DrawCube
-  int center_x = WINDOW_WIDTH / 2;
-  int center_y = WINDOW_HEIGHT / 2;
-  float x,y,z;
-  const vertex o = cube->get_origin();
-  const angles a = cube->get_heading_rads();
-  const int cube_w = cube->get_width();
-
-  const double width = 1.0;
-  double space = width/(cube_w-1); // 1/nw * width
-  double half_width = width/2;
-  coords xyz = Index_to_XYZ(index, cube_w);
-  x = xyz.x * space - half_width;
-  y = xyz.y * space - half_width;
-  z = xyz.z * space - half_width;
-  vertex vert = Rotate({x, y, z}, a);
-  x=vert.x+o.x; y=vert.y+o.y; z=vert.z+o.z;
-
-  int u = FOV*x/z+center_x; int v = FOV*y/z+center_y;
-  int w, h;
-  SDL_QueryTexture(img, NULL, NULL, &w, &h);
-  SDL_Rect r = {int(u-w/z*0.5), int(v-w/z*0.5), int(w/z), int(h/z)};
-  SDL_RenderCopy(renderer, img, NULL, &r);
+    vertex o = this->origin;
+    angles a = this->get_heading_rads();
+    const double w = 1.0;
+    double space = w/(width-1); // 1/nw * w
+    double half_width = w/2;
+    double x = xyz.x * space - half_width;
+    double y = xyz.y * space - half_width;
+    double z = xyz.z * space - half_width;
+    vertex v = Rotate({x, y, z}, a);
+    v.x += o.x; v.y += o.y; v.z += o.z;
+    return v;
 }
 
-direction Selector::move(direction dir)
+vertex Cube::index_to_vertex(int index)
 {
-    // get rotations of x,y,z with current angle, to see which way is up/down and left/right
-    const angles a = cube->get_heading_rads();
-    vertex rot_x = Rotate({1,0,0}, a);
-    vertex rot_y = Rotate({0,1,0}, a);
-    vertex rot_z = Rotate({0,0,1}, a);
-    axis u_axis, v_axis; // u=left/right, v=up/down
-    int lft_u, rgt_u, top_v, bot_v;
-    const int width = cube->get_width();
-    const int max = width-1;
-
-    if (rot_x.x== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
-    if (rot_x.x==-1) {u_axis=axis::x; lft_u=max; rgt_u=0;}
-    if (rot_y.x== 1) {u_axis=axis::y; lft_u=0;   rgt_u=max;}
-    if (rot_y.x==-1) {u_axis=axis::y; lft_u=max; rgt_u=0;}
-    if (rot_z.x== 1) {u_axis=axis::z; lft_u=0;   rgt_u=max;}
-    if (rot_z.x==-1) {u_axis=axis::z; lft_u=max; rgt_u=0;}
-
-    if (rot_x.y== 1) {v_axis=axis::x; top_v=0;   bot_v=max;}
-    if (rot_x.y==-1) {v_axis=axis::x; top_v=max; bot_v=0;}
-    if (rot_y.y== 1) {v_axis=axis::y; top_v=0;   bot_v=max;}
-    if (rot_y.y==-1) {v_axis=axis::y; top_v=max; bot_v=0;}
-    if (rot_z.y== 1) {v_axis=axis::z; top_v=0;   bot_v=max;}
-    if (rot_z.y==-1) {v_axis=axis::z; top_v=max; bot_v=0;}
-
-    int du = (rgt_u - lft_u) / (max);
-    int dv = (bot_v - top_v) / (max);
-
-    coords curr_xyz = Index_to_XYZ(index, width);
-    switch(dir) {
-        case direction::up:    AddAxis(&curr_xyz, -dv, v_axis); break;
-        case direction::down:  AddAxis(&curr_xyz,  dv, v_axis); break;
-        case direction::left:  AddAxis(&curr_xyz, -du, u_axis); break;
-        case direction::right: AddAxis(&curr_xyz,  du, u_axis); break;
-        case direction::null: break;
-    }
-    bool out_x = curr_xyz.x < 0 || curr_xyz.x > max;
-    bool out_y = curr_xyz.y < 0 || curr_xyz.y > max;
-    bool out_z = curr_xyz.z < 0 || curr_xyz.z > max;
-    if (out_x || out_y || out_z) {
-        return dir;
-    }
-    index = XYZ_to_index(curr_xyz, width);
-    return direction::null;
+    return this->coords_to_vertex(Index_to_XYZ(index, width));
 }
-
 
 #endif
