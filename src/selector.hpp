@@ -23,7 +23,14 @@ void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
 {
     int center_x = WINDOW_WIDTH / 2;
     int center_y = WINDOW_HEIGHT / 2;
-    vertex vert = cube->index_to_vertex(this->index);
+    vertex vert = this->cube->index_to_vertex(this->index);
+    if (this->between) {
+        vertex old_vert = this->cube->index_to_vertex(this->old_index);
+        vert.x = (vert.x + old_vert.x) / 2;
+        vert.y = (vert.y + old_vert.y) / 2;
+        vert.z = (vert.z + old_vert.z) / 2;
+        between = false;
+    }
 
     int u = FOV*vert.x/vert.z+center_x;
     int v = FOV*vert.y/vert.z+center_y;
@@ -36,13 +43,13 @@ void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
 direction Selector::move(direction dir)
 {
     // get rotations of x,y,z with current angle, to see which way is up/down and left/right
-    const angles a = cube->get_heading_rads();
+    const angles a = this->cube->get_heading_rads();
     vertex rot_x = Rotate({1,0,0}, a);
     vertex rot_y = Rotate({0,1,0}, a);
     vertex rot_z = Rotate({0,0,1}, a);
     axis u_axis, v_axis; // u=left/right, v=up/down
     int lft_u, rgt_u, top_v, bot_v;
-    const int width = cube->get_width();
+    const int width = this->cube->get_width();
     const int max = width-1;
 
     if (rot_x.x== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
@@ -76,7 +83,9 @@ direction Selector::move(direction dir)
     if (out_x || out_y || out_z) {
         return dir;
     }
-    index = XYZ_to_index(curr_xyz, width);
+    this->old_index = this->index;
+    this->index = XYZ_to_index(curr_xyz, width);
+    this->between = true;
     return direction::null;
 }
 
