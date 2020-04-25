@@ -3,7 +3,7 @@
 // do not #include "cube.hpp"
 
 class Tile {
-private:
+protected:
     int index;
     static SDL_Surface* img_surface;
     SDL_Texture* img_texture;
@@ -12,7 +12,8 @@ public:
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     void draw(double x, double y, double z);
-    inline Tile(int i, SDL_Renderer * r) {
+    inline Tile(int i, SDL_Renderer * r)
+    {
         index=i;
         rend=r;
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
@@ -32,5 +33,16 @@ void Tile::draw(double x, double y, double z)
     SDL_Rect r = {int(u-w*0.5), int(v-h*0.5), w, h};
     SDL_RenderCopy(this->rend, img_texture, NULL, &r);
 }
+
+class RedTile : public Tile {
+protected:
+    static SDL_Surface* img_surface;
+public:
+    RedTile(int i, SDL_Renderer * r) : Tile(i, r)
+    {
+        img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
+    };
+};
+SDL_Surface* RedTile::img_surface = IMG_Load("Resources/red_ring.png");
 
 #endif

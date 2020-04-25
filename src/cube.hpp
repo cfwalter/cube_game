@@ -99,7 +99,10 @@ public:
     {
         origin=o; width=w; heading=h; target_heading=th; rend=r;
         int w3 = pow(w,3);
-        for (int i=0; i<w3; ++i) {tiles.push_back(Tile(i, r));}
+        for (int i=0; i<w3; ++i) {
+            if(i%2) {tiles.push_back(RedTile(i, r));}
+            else    {tiles.push_back(   Tile(i, r));}
+        }
     };
     inline vertex get_origin() {return origin;};
     inline int get_width() {return width;};
