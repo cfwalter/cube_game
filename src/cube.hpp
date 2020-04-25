@@ -174,16 +174,19 @@ void Cube::update()
 void Cube::draw()
 {
     int end = this->tiles.size();
+    int index;
+    Tile* tile;
     for (int i=0; i<end; ++i) {
-        coords xyz = Index_to_XYZ(i, width);
+        tile = this->tiles.at(i);
+        int index = tile->get_index();
+        coords xyz = Index_to_XYZ(index, width);
         // TODO: gotta be a better way to do this logic
         bool front_face = !(xyz.x && xyz.y && xyz.z);
         bool back_face  = !((xyz.x+1)%width && (xyz.y+1)%width && (xyz.z+1)%width);
         if ( front_face || back_face){
             vertex vert = coords_to_vertex(xyz);
-
             if (vert.z>0) {
-                this->tiles.at(i)->draw(vert.x, vert.y, vert.z);
+                tile->draw(vert.x, vert.y, vert.z);
             }
         }
     }
