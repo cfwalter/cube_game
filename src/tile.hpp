@@ -5,6 +5,7 @@
 class Tile {
 protected:
     int index;
+    bool solid = false;
     static SDL_Surface* img_surface;
     SDL_Texture* img_texture;
     SDL_Renderer * rend;
@@ -18,10 +19,10 @@ public:
         rend=r;
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     }
+    inline bool is_walkable() {return !this->solid;};
 };
 
 SDL_Surface* Tile::img_surface = IMG_Load("Resources/blu_ring.png");
-
 
 void Tile::draw(double x, double y, double z)
 {
@@ -40,9 +41,11 @@ protected:
 public:
     RedTile(int i, SDL_Renderer * r) : Tile(i, r)
     {
+        solid = true;
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
 };
+
 SDL_Surface* RedTile::img_surface = IMG_Load("Resources/red_ring.png");
 
 #endif

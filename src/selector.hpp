@@ -61,6 +61,8 @@ void Selector::draw()
 direction Selector::move(direction dir)
 {
     if (this->move_frame) {return direction::null;}  //don't collect input during move animation
+
+    // Cube logic
     // get rotations of x,y,z with current angle, to see which way is up/down and left/right
     const angles a = this->cube->get_heading_rads();
     vertex rot_x = Rotate({1,0,0}, a);
@@ -102,9 +104,14 @@ direction Selector::move(direction dir)
     if (out_x || out_y || out_z) {
         return dir;
     }
-    this->old_index = this->index;
-    this->index = XYZ_to_index(curr_xyz, width);
-    this->move_frame = 1;
+
+    // Tile logic
+    int i = XYZ_to_index(curr_xyz, width);
+    if (this->cube->get_tiles().at(i)->is_walkable()) {
+        this->old_index = this->index;
+        this->index = i;
+        this->move_frame = 1;
+    }
     return direction::null;
 }
 

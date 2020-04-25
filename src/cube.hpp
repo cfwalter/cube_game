@@ -93,15 +93,18 @@ private:
     angles heading;
     angles target_heading;
     SDL_Renderer * rend;
-    std::vector <Tile> tiles;
+    std::vector <Tile*> tiles;
 public:
     inline Cube(SDL_Renderer * r, vertex o, int w, angles h, angles th)
     {
         origin=o; width=w; heading=h; target_heading=th; rend=r;
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
-            if(i%2) {tiles.push_back(RedTile(i, r));}
-            else    {tiles.push_back(   Tile(i, r));}
+            if(i%7==1) {
+                tiles.push_back(new RedTile(i,r));
+            } else {
+                tiles.push_back(new    Tile(i,r));
+            }
         }
     };
     inline vertex get_origin() {return origin;};
@@ -120,6 +123,7 @@ public:
     {
         return (!(int(heading.psi)%90) && !(int(heading.theta)%90) && !(int(heading.phi)%90));
     };
+    inline std::vector <Tile*> get_tiles() {return tiles;};
     void rotate(direction dir);
     void update();
     vertex coords_to_vertex(coords xyz);
@@ -176,7 +180,7 @@ void Cube::draw()
             vertex vert = coords_to_vertex(xyz);
 
             if (vert.z>0) {
-                this->tiles.at(i).draw(vert.x, vert.y, vert.z);
+                this->tiles.at(i)->draw(vert.x, vert.y, vert.z);
             }
         }
     }
