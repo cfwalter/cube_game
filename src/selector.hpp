@@ -38,8 +38,6 @@ SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/closed_box.png")
 
 void Selector::draw()
 {
-    int center_x = WINDOW_WIDTH / 2;
-    int center_y = WINDOW_HEIGHT / 2;
     vertex vert = this->cube->index_to_vertex(this->index);
     if (this->move_frame) {
         vertex old_vert = this->cube->index_to_vertex(this->old_index);
@@ -51,8 +49,8 @@ void Selector::draw()
     }
     if (this->move_frame == this->move_frames_total) { this->move_frame = 0; }
 
-    int u = FOV*vert.x/vert.z+center_x;
-    int v = FOV*vert.y/vert.z+center_y;
+    int u = FOV*vert.x/vert.z+CENTER_X;
+    int v = FOV*vert.y/vert.z+CENTER_Y;
     int w, h;
     SDL_Texture* tex = (this->holding? this->closed_box_texture : this->open_box_texture);
     SDL_QueryTexture(tex, NULL, NULL, &w, &h);

@@ -1,5 +1,6 @@
 #ifndef CUBE_HPP
 #define CUBE_HPP
+#include "tile.hpp"
 #include "quat.hpp"
 
 struct vertex  // rendering 3D graphics
@@ -91,10 +92,14 @@ private:
     int width;
     angles heading;
     angles target_heading;
+    SDL_Renderer * rend;
+    std::vector <Tile> tiles;
 public:
-    inline Cube(vertex o, int w, angles h, angles th)
+    inline Cube(SDL_Renderer * r, vertex o, int w, angles h, angles th)
     {
-        origin=o; width=w; heading=h; target_heading=th;
+        origin=o; width=w; heading=h; target_heading=th; rend=r;
+        int w3 = pow(w,3);
+        for (int i=0; i<w3; ++i) {tiles.push_back(Tile(i, r));}
     };
     inline vertex get_origin() {return origin;};
     inline int get_width() {return width;};
@@ -116,7 +121,7 @@ public:
     void update();
     vertex coords_to_vertex(coords xyz);
     vertex index_to_vertex(int index);
-    void draw(SDL_Renderer * renderer, SDL_Texture* img);
+    void draw();
 };
 
 void Cube::rotate(direction dir)
@@ -156,12 +161,10 @@ void Cube::update()
     if (heading.theta > target_heading.theta) heading.theta -= D_ANGLE;
 }
 
-void Cube::draw(SDL_Renderer * renderer, SDL_Texture* img)
+void Cube::draw()
 {
-    const int center_x = WINDOW_WIDTH / 2;
-    const int center_y = WINDOW_HEIGHT / 2;
-
-    for (int i=0; i<pow(width,3); ++i) {
+    int end = this->tiles.size();
+    for (int i=0; i<end; ++i) {
         coords xyz = Index_to_XYZ(i, width);
         // TODO: gotta be a better way to do this logic
         bool front_face = !(xyz.x && xyz.y && xyz.z);
@@ -170,13 +173,7 @@ void Cube::draw(SDL_Renderer * renderer, SDL_Texture* img)
             vertex vert = coords_to_vertex(xyz);
 
             if (vert.z>0) {
-                int u = FOV*vert.x/vert.z+center_x;
-                int v = FOV*vert.y/vert.z+center_y;
-                int w, h;
-                SDL_QueryTexture(img, NULL, NULL, &w, &h);
-                w = w/vert.z; h = h/vert.z;
-                SDL_Rect r = {int(u-w*0.5), int(v-w*0.5), int(w), int(h)};
-                SDL_RenderCopy(renderer, img, NULL, &r);
+                this->tiles.at(i).draw(vert.x, vert.y, vert.z);
             }
         }
     }

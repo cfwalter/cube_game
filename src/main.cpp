@@ -45,7 +45,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     bool x_key_dirty = false;
 
     const int WIDTH = 5;
-    Cube play_cube = Cube({0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
+    Cube play_cube = Cube(rend, {0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
 
     Selector select = Selector(rend, 0, &play_cube);
 
@@ -115,7 +115,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         SDL_RenderClear(rend);
 
         // DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
-        play_cube.draw(rend, blu_ring_tex);
+        play_cube.draw();
         select.draw();
         // DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
 
