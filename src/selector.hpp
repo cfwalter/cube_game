@@ -9,18 +9,34 @@ private:
     bool holding;
     const int move_frames_total = 10;
     int move_frame;
+    int hold_frame;
+    static SDL_Surface* closed_box_surface;
+    SDL_Texture* closed_box_texture;
+    static SDL_Surface* open_box_surface;
+    SDL_Texture* open_box_texture;
+    SDL_Renderer * rend;
     Cube* cube;
 public :
-    inline Selector(int i, Cube* c) {index=i; holding=false; cube=c; move_frame=0;};
+    inline Selector(SDL_Renderer * r, int i, Cube* c)
+    {
+        index=i; holding=false; cube=c; move_frame=0; hold_frame=0;
+        rend = r;
+        closed_box_texture = SDL_CreateTextureFromSurface(rend, closed_box_surface);
+        open_box_texture = SDL_CreateTextureFromSurface(rend, open_box_surface);
+    };
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     inline bool is_holding() {return holding;}
     inline void set_holding(bool h) {holding=h;}
+    inline void toggle_holding() {holding=!holding;}
     direction move(direction dir);
-    void draw(SDL_Renderer * renderer, SDL_Texture* img);
+    void draw();
 };
 
-void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
+SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/open_box.png");
+SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/closed_box.png");
+
+void Selector::draw()
 {
     int center_x = WINDOW_WIDTH / 2;
     int center_y = WINDOW_HEIGHT / 2;
@@ -38,9 +54,10 @@ void Selector::draw(SDL_Renderer * renderer, SDL_Texture* img)
     int u = FOV*vert.x/vert.z+center_x;
     int v = FOV*vert.y/vert.z+center_y;
     int w, h;
-    SDL_QueryTexture(img, NULL, NULL, &w, &h);
+    SDL_Texture* tex = (this->holding? this->closed_box_texture : this->open_box_texture);
+    SDL_QueryTexture(tex, NULL, NULL, &w, &h);
     SDL_Rect r = {int(u-w/vert.z*0.5), int(v-w/vert.z*0.5), int(w/vert.z), int(h/vert.z)};
-    SDL_RenderCopy(renderer, img, NULL, &r);
+    SDL_RenderCopy(this->rend, tex, NULL, &r);
 }
 
 direction Selector::move(direction dir)

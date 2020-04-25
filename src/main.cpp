@@ -6,9 +6,9 @@
 #include <vector>
 #include <math.h>
 #include <iostream>
+#include <stdio.h>
 
 // SDL imports
-#include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_image.h>
@@ -42,11 +42,12 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     const int INPUT_POLL_MAX = 5; // number of frames between repeated inputs
     int input_poll_t = 0; // on key down, set to max, on key up, reset to 0
     int input_blocked = false;
+    bool x_key_dirty = false;
 
     const int WIDTH = 5;
     Cube play_cube = Cube({0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
 
-    Selector select = Selector(0, &play_cube);
+    Selector select = Selector(rend, 0, &play_cube);
 
     bool quit_state = false;
     bool pause_state = false;
@@ -83,23 +84,29 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         bool rgt_key = keys[SDLK_a] || keys[SDLK_RIGHT];
         bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
         bool lft_key = keys[SDLK_d] || keys[SDLK_LEFT];
+        bool   x_key = keys[SDLK_x];
+        if (!x_key) x_key_dirty = false;
         bool dir_key_pressed = (up__key || rgt_key || dwn_key || lft_key);
+
 
         input_poll_t = INPUT_POLL_MAX;
 
         if (play_cube.is_heading_square() && dir_key_pressed) {
-          direction dir;
-          if (up__key) dir = direction::up;
-          if (rgt_key) dir = direction::right;
-          if (dwn_key) dir = direction::down;
-          if (lft_key) dir = direction::left;
-          rotate_cube = select.move(dir);
-          // rotate_cube = MoveTarget(&select_index, {Rad(phi), Rad(theta), Rad(psi)}, dir);
+            direction dir;
+            if (up__key) dir = direction::up;
+            if (rgt_key) dir = direction::right;
+            if (dwn_key) dir = direction::down;
+            if (lft_key) dir = direction::left;
+            rotate_cube = select.move(dir);
+        }
+        if (x_key && !x_key_dirty) {
+            select.toggle_holding();
+            x_key_dirty = true;
         }
 
         if (play_cube.is_heading_square() && rotate_cube != direction::null) {
-          play_cube.rotate(rotate_cube);
-          rotate_cube = direction::null;
+            play_cube.rotate(rotate_cube);
+            rotate_cube = direction::null;
         }
 
         play_cube.update();
@@ -109,7 +116,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
         // DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
         play_cube.draw(rend, blu_ring_tex);
-        select.draw(rend, box_tex);
+        select.draw();
         // DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
 
         // debugging output
@@ -182,16 +189,16 @@ game_state PauseLoop(SDL_Renderer* rend, TTF_Font* font,
         play_state = keys[SDLK_ESCAPE];
 
         if (keys[SDLK_RETURN]) {
-          switch (option_picked) {
-            case 0: play_state = true; break;
-            case 1: quit_state = true; break;
-          }
+            switch (option_picked) {
+                case 0: play_state = true; break;
+                case 1: quit_state = true; break;
+            }
         }
 
         if (!(keys[SDLK_DOWN] || keys[SDLK_UP])) arrow_key_dirty = true;
         if ((keys[SDLK_DOWN] || keys[SDLK_UP]) && arrow_key_dirty) {
-          option_picked = (option_picked + 1) % 2;
-          arrow_key_dirty = false;
+            option_picked = (option_picked + 1) % 2;
+            arrow_key_dirty = false;
         }
 
         // clear the window
@@ -260,15 +267,15 @@ int main(int argc, char *argv[])
 
     game_state state = game_state::play;
     while(state!=game_state::quit) {
-      switch(state) {
-        case game_state::play:
-          state = PlayLoop(rend, font, player_nest, target_nest, &current_ind);
-          break;
-        case game_state::pause:
-          state = PauseLoop(rend, font, player_nest, target_nest, &current_ind);
-          break;
-        case game_state::quit: break;
-        default: break;
+        switch(state) {
+            case game_state::play:
+                state = PlayLoop(rend, font, player_nest, target_nest, &current_ind);
+                break;
+            case game_state::pause:
+                state = PauseLoop(rend, font, player_nest, target_nest, &current_ind);
+                break;
+            case game_state::quit: break;
+            default: break;
       }
     }
     // clean up resources before exiting
