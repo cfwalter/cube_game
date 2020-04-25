@@ -39,10 +39,8 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     std::vector<int> player_nest[], std::vector<int> target_nest[], int* current_ind)
 {
     std::map<int,bool> keys;
-    const int INPUT_POLL_MAX = 5; // number of frames between repeated inputs
-    int input_poll_t = 0; // on key down, set to max, on key up, reset to 0
-    int input_blocked = false;
     bool x_key_dirty = false;
+    bool e_key_dirty = false;
 
     const int WIDTH = 5;
     Cube play_cube = Cube(rend, {0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
@@ -54,17 +52,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
     direction rotate_cube = direction::null;
 
-    SDL_Surface* blu_ring = IMG_Load("Resources/blu_ring.png");
-    SDL_Texture* blu_ring_tex = SDL_CreateTextureFromSurface(rend, blu_ring);
-    SDL_FreeSurface(blu_ring);
-
-    SDL_Surface* red_ring = IMG_Load("Resources/red_ring.png");
-    SDL_Texture* red_ring_tex = SDL_CreateTextureFromSurface(rend, red_ring);
-    SDL_FreeSurface(red_ring);
-
-    SDL_Surface* box = IMG_Load("Resources/open_box.png");
-    SDL_Texture* box_tex = SDL_CreateTextureFromSurface(rend, box);
-    SDL_FreeSurface(box);
+    SDL_Surface* edit_msg_surface = TTF_RenderText_Solid(font, "EDIT", {255, 255, 255});
+    SDL_Texture* edit_msg_texture = SDL_CreateTextureFromSurface(rend, edit_msg_surface);
+    SDL_Rect edit_msg_rect = {20, 20, edit_msg_surface->w, edit_msg_surface->h};
+    SDL_FreeSurface(edit_msg_surface);
 
     for(std::map<int,bool> keys; !(quit_state || pause_state); ) {
         // process events
@@ -85,11 +76,15 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
         bool lft_key = keys[SDLK_d] || keys[SDLK_LEFT];
         bool   x_key = keys[SDLK_x];
+        bool   e_key = keys[SDLK_e];
         if (!x_key) x_key_dirty = false;
+        if (!e_key) e_key_dirty = false;
         bool dir_key_pressed = (up__key || rgt_key || dwn_key || lft_key);
 
-
-        input_poll_t = INPUT_POLL_MAX;
+        if (keys[SDLK_e] && !e_key_dirty) {
+            play_cube.toggle_edit_mode();
+            e_key_dirty = true;
+        }
 
         if (play_cube.is_heading_square() && dir_key_pressed) {
             direction dir;
@@ -114,10 +109,11 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         // clear the window
         SDL_RenderClear(rend);
 
-        // DrawCube(rend, {-1, 0, 3}, a, blu_ring_tex);
         play_cube.draw();
         select.draw();
-        // DrawCube(rend, {1, 0, 3}, a, red_ring_tex);
+        if (play_cube.get_edit_mode()) {
+            SDL_RenderCopy(rend, edit_msg_texture, NULL, &edit_msg_rect);
+        }
 
         // debugging output
         // std::string op = "pitch:" + std::to_string(phi%360) +
@@ -148,11 +144,6 @@ game_state PauseLoop(SDL_Renderer* rend, TTF_Font* font,
   std::vector<int> player_nest[], std::vector<int> target_nest[], int* current_ind)
 {
     std::map<int,bool> keys;
-
-    SDL_Surface* message = TTF_RenderText_Solid(font, "PAUSED", {255, 255, 255});
-    SDL_Texture* message_tex = SDL_CreateTextureFromSurface(rend, message);
-    int paused_y = WINDOW_HEIGHT/2-69;
-    SDL_Rect message_rect = {WINDOW_WIDTH/2-message->w/2, paused_y, message->w, message->h};
 
     SDL_Surface* play_option = TTF_RenderText_Solid(font, "PLAY", {255, 255, 255});
     SDL_Texture* play_option_tex = SDL_CreateTextureFromSurface(rend, play_option);
@@ -210,8 +201,6 @@ game_state PauseLoop(SDL_Renderer* rend, TTF_Font* font,
         SDL_Delay(1000/FPS);
     }
 
-    SDL_FreeSurface(message);
-    SDL_DestroyTexture(message_tex);
     SDL_FreeSurface(play_option);
     SDL_DestroyTexture(play_option_tex);
     SDL_FreeSurface(quit_option);

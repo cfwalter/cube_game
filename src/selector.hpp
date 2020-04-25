@@ -107,10 +107,19 @@ direction Selector::move(direction dir)
 
     // Tile logic
     int i = XYZ_to_index(curr_xyz, width);
+    if (this->cube->get_edit_mode()) { // in edit mode, ignore all tile logic
+        this->old_index = this->index;
+        this->index = i;
+        this->move_frame = 1;
+        return direction::null;
+    }
     if (this->cube->get_tiles().at(i)->is_walkable()) {
         this->old_index = this->index;
         this->index = i;
         this->move_frame = 1;
+    } else {
+        this->old_index = i;
+        this->move_frame = this->move_frames_total / 2;
     }
     return direction::null;
 }

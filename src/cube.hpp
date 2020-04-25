@@ -90,6 +90,7 @@ class Cube {
 private:
     vertex origin;
     int width;
+    bool edit_mode = false;
     angles heading;
     angles target_heading;
     SDL_Renderer * rend;
@@ -124,6 +125,8 @@ public:
         return (!(int(heading.psi)%90) && !(int(heading.theta)%90) && !(int(heading.phi)%90));
     };
     inline std::vector <Tile*> get_tiles() {return tiles;};
+    inline bool get_edit_mode() {return edit_mode;};
+    inline void toggle_edit_mode() {edit_mode = !edit_mode;};
     void rotate(direction dir);
     void update();
     vertex coords_to_vertex(coords xyz);
