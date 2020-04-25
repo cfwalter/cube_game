@@ -38,10 +38,6 @@ bool Collision(int target_ind, std::vector<int> nest[])
 game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     std::vector<int> player_nest[], std::vector<int> target_nest[], int* current_ind)
 {
-    std::map<int,bool> keys;
-    bool x_key_dirty = false;
-    bool e_key_dirty = false;
-
     const int WIDTH = 5;
     Cube play_cube = Cube(rend, {0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
 
@@ -64,7 +60,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             switch (ev.type)
             {
                 case SDL_QUIT: quit_state = true; break;
-                case SDL_KEYDOWN: keys[ev.key.keysym.sym] = true; break;
+                case SDL_KEYDOWN: if (ev.key.repeat == 0) {keys[ev.key.keysym.sym] = true;} break;
                 case SDL_KEYUP: keys[ev.key.keysym.sym] = false; break;
             }
         }
@@ -75,15 +71,15 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         bool rgt_key = keys[SDLK_a] || keys[SDLK_RIGHT];
         bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
         bool lft_key = keys[SDLK_d] || keys[SDLK_LEFT];
-        bool   x_key = keys[SDLK_x];
-        bool   e_key = keys[SDLK_e];
-        if (!x_key) x_key_dirty = false;
-        if (!e_key) e_key_dirty = false;
         bool dir_key_pressed = (up__key || rgt_key || dwn_key || lft_key);
 
-        if (keys[SDLK_e] && !e_key_dirty) {
+        if (keys[SDLK_e]) {
             play_cube.toggle_edit_mode();
-            e_key_dirty = true;
+            keys[SDLK_e] = false;
+        }
+
+        if (play_cube.get_edit_mode()) {
+            // if (keys[SDLK_w])
         }
 
         if (play_cube.is_heading_square() && dir_key_pressed) {
@@ -94,9 +90,9 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             if (lft_key) dir = direction::left;
             rotate_cube = select.move(dir);
         }
-        if (x_key && !x_key_dirty) {
+        if (keys[SDLK_x]) {
             select.toggle_holding();
-            x_key_dirty = true;
+            keys[SDLK_x] = false;
         }
 
         if (play_cube.is_heading_square() && rotate_cube != direction::null) {
