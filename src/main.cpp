@@ -79,7 +79,8 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         }
 
         if (play_cube.get_edit_mode()) {
-            // if (keys[SDLK_w])
+            if (keys[SDLK_1]) {play_cube.edit_tile(1, select.get_index()); keys[SDLK_1]=false;}
+            if (keys[SDLK_2]) {play_cube.edit_tile(2, select.get_index()); keys[SDLK_2]=false;}
         }
 
         if (play_cube.is_heading_square() && dir_key_pressed) {

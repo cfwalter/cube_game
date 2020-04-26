@@ -131,8 +131,46 @@ public:
     void update();
     vertex coords_to_vertex(coords xyz);
     vertex index_to_vertex(int index);
+    void edit_tile(int type, int index);
+    Tile* get_tile_at(int index);
+    void erase_tile_at(int index);
     void draw();
 };
+
+Tile* Cube::get_tile_at(int index)
+{
+    if (this->tiles.at(index)->get_index() == index) {
+        // check that spot directly, will work for loaded levels probably, save you a loop
+        return this->tiles.at(index);
+    }
+    for (int i=0; i<this->tiles.size(); ++i) {
+        if (this->tiles.at(i)->get_index() == index) {
+            return this->tiles.at(i);
+        }
+    }
+}
+
+void Cube::erase_tile_at(int index)
+{
+    for (int i=0; i<this->tiles.size(); ++i) {
+        if (this->tiles.at(i)->get_index() == index) {
+            this->tiles.erase(this->tiles.begin() + i);
+            return;
+        }
+    }
+}
+
+void Cube::edit_tile(int type, int index)
+{
+    Tile* tile;
+    switch(type) {
+        case 1: tile = new    Tile(index, this->rend); break;
+        case 2: tile = new RedTile(index, this->rend); break;
+        default: return;
+    }
+    this->erase_tile_at(index);
+    this->tiles.push_back(tile);
+}
 
 void Cube::rotate(direction dir)
 {
@@ -173,13 +211,12 @@ void Cube::update()
 
 void Cube::draw()
 {
-    int end = this->tiles.size();
     int index;
     Tile* tile;
-    for (int i=0; i<end; ++i) {
+    for (int i=0; i<this->tiles.size(); ++i) {
         tile = this->tiles.at(i);
         int index = tile->get_index();
-        coords xyz = Index_to_XYZ(index, width);
+        coords xyz = Index_to_XYZ(index, this->width);
         // TODO: gotta be a better way to do this logic
         bool front_face = !(xyz.x && xyz.y && xyz.z);
         bool back_face  = !((xyz.x+1)%width && (xyz.y+1)%width && (xyz.z+1)%width);

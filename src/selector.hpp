@@ -113,7 +113,7 @@ direction Selector::move(direction dir)
         this->move_frame = 1;
         return direction::null;
     }
-    if (this->cube->get_tiles().at(i)->is_walkable()) {
+    if (this->cube->get_tile_at(i)->is_walkable()) {
         this->old_index = this->index;
         this->index = i;
         this->move_frame = 1;
