@@ -101,11 +101,11 @@ public:
         origin=o; width=w; heading=h; target_heading=th; rend=r;
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
-            if(i%7==1) {
-                tiles.push_back(new RedTile(i,r));
-            } else {
-                tiles.push_back(new    Tile(i,r));
-            }
+            // if(i%7==1) {
+                tiles.push_back(new YellowTile(i,r));
+            // } else {
+                // tiles.push_back(new       Tile(i,r));
+            // }
         }
     };
     inline vertex get_origin() {return origin;};
@@ -148,6 +148,7 @@ Tile* Cube::get_tile_at(int index)
             return this->tiles.at(i);
         }
     }
+    return NULL;
 }
 
 void Cube::erase_tile_at(int index)

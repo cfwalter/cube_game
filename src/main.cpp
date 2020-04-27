@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_Window* win = SDL_CreateWindow("Untangle",
+    SDL_Window* win = SDL_CreateWindow("Untitled Cube Game",
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
                                        WINDOW_WIDTH, WINDOW_HEIGHT,0);
