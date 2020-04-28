@@ -102,6 +102,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         }
 
         play_cube.update();
+        select.update();
 
         // clear the window
         SDL_RenderClear(rend);

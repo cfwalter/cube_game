@@ -39,14 +39,22 @@ public :
     }
     inline void toggle_holding() {holding=!holding; set_held_block();}
     direction move(direction dir);
+    void update();
     void draw();
 };
 
 SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/open_box.png");
 SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/closed_box.png");
 
+void Selector::update()
+{
+    if (this->move_frame) { this->move_frame += 1; }
+    if (this->move_frame == this->move_frames_total) { this->move_frame = 0; }
+}
+
 void Selector::draw()
 {
+    // TODO: break this out into an update function
     vertex vert = this->cube->index_to_vertex(this->index);
     if (this->move_frame) {
         vertex old_vert = this->cube->index_to_vertex(this->old_index);
@@ -54,9 +62,7 @@ void Selector::draw()
         vert.x -= (vert.x - old_vert.x) * dist;
         vert.y -= (vert.y - old_vert.y) * dist;
         vert.z -= (vert.z - old_vert.z) * dist;
-        this->move_frame += 1;
     }
-    if (this->move_frame == this->move_frames_total) { this->move_frame = 0; }
 
     int u = FOV*vert.x/vert.z+CENTER_X;
     int v = FOV*vert.y/vert.z+CENTER_Y;
@@ -126,7 +132,9 @@ direction Selector::move(direction dir)
 
     // Block logic
     if (move_success && this->held_block) {
+        this->held_block->set_old_vertex(this->cube->index_to_vertex(this->index));
         this->held_block->set_index(i);
+        this->held_block->start_move();
     }
 
     if (move_success) {

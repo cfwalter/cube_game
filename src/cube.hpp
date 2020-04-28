@@ -3,44 +3,7 @@
 #include "tile.hpp"
 #include "block.hpp"
 #include "quat.hpp"
-
-struct vertex  // rendering 3D graphics
-{
-    double x;
-    double y;
-    double z;
-};
-
-struct coords // track point on 3D grid
-{
-    int x;
-    int y;
-    int z;
-};
-
-struct angles
-{
-  double phi;
-  double theta;
-  double psi;
-};
-
-enum axis
-{
-    x=0,
-    y,
-    z,
-    none,
-};
-
-enum direction
-{
-    up=0,
-    right,
-    down,
-    left,
-    null,
-};
+#include "common.hpp"
 
 coords Index_to_XYZ(int index, int width)
 {
@@ -222,6 +185,10 @@ void Cube::update()
     if (heading.phi   > target_heading.phi)   heading.phi   -= D_ANGLE;
     if (heading.theta < target_heading.theta) heading.theta += D_ANGLE;
     if (heading.theta > target_heading.theta) heading.theta -= D_ANGLE;
+
+    for (int i=0; i<this->blocks.size(); ++i) {
+        this->blocks.at(i)->update();
+    }
 }
 
 void Cube::draw()
