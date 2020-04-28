@@ -9,6 +9,8 @@ protected:
     static SDL_Surface* img_surface;
     SDL_Texture* img_texture;
     SDL_Renderer * rend;
+    static const int h = 18;
+    static const int w = 18;
 public:
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
@@ -29,10 +31,11 @@ void Tile::draw(double x, double y, double z)
 {
     int u = FOV*x/z+CENTER_X;
     int v = FOV*y/z+CENTER_Y;
-    int w, h;
-    SDL_QueryTexture(img_texture, NULL, NULL, &w, &h);
-    w = w/z; h = h/z;
-    SDL_Rect r = {int(u-w*0.5), int(v-h*0.5), w, h};
+    // int w, h;
+    // SDL_QueryTexture(img_texture, NULL, NULL, &w, &h);
+    double wz = w/z;
+    double hz = h/z;
+    SDL_Rect r = {int(u-wz*0.5), int(v-hz*0.5), int(wz), int(hz)};
     SDL_RenderCopy(this->rend, img_texture, NULL, &r);
 }
 

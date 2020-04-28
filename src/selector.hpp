@@ -16,6 +16,7 @@ private:
     SDL_Texture* open_box_texture;
     SDL_Renderer * rend;
     Cube* cube;
+    Block* held_block;
 public :
     inline Selector(SDL_Renderer * r, int i, Cube* c)
     {
@@ -27,8 +28,16 @@ public :
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     inline bool is_holding() {return holding;}
-    inline void set_holding(bool h) {holding=h;}
-    inline void toggle_holding() {holding=!holding;}
+    inline void set_holding(bool h) {holding=h; set_held_block();}
+    inline void set_held_block()
+    {
+        if (this->holding) {
+            this->held_block = this->cube->get_block_at(this->index);
+        } else {
+            this->held_block = NULL;
+        }
+    }
+    inline void toggle_holding() {holding=!holding; set_held_block();}
     direction move(direction dir);
     void draw();
 };
@@ -113,7 +122,14 @@ direction Selector::move(direction dir)
         this->move_frame = 1;
         return direction::null;
     }
-    if (this->cube->get_tile_at(i)->is_walkable()) {
+    bool move_success = this->cube->get_tile_at(i)->is_walkable();
+
+    // Block logic
+    if (move_success && this->held_block) {
+        this->held_block->set_index(i);
+    }
+
+    if (move_success) {
         this->cube->get_tile_at(this->index)->on_exit();
         this->old_index = this->index;
         this->index = i;

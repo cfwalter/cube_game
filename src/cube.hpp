@@ -1,6 +1,7 @@
 #ifndef CUBE_HPP
 #define CUBE_HPP
 #include "tile.hpp"
+#include "block.hpp"
 #include "quat.hpp"
 
 struct vertex  // rendering 3D graphics
@@ -95,6 +96,7 @@ private:
     angles target_heading;
     SDL_Renderer * rend;
     std::vector <Tile*> tiles;
+    std::vector <Block*> blocks;
 public:
     inline Cube(SDL_Renderer * r, vertex o, int w, angles h, angles th)
     {
@@ -102,11 +104,12 @@ public:
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
             // if(i%7==1) {
-                tiles.push_back(new YellowTile(i,r));
+                tiles.push_back(new Tile(i,r));
             // } else {
                 // tiles.push_back(new       Tile(i,r));
             // }
         }
+        blocks.push_back(new Block(5,r));
     };
     inline vertex get_origin() {return origin;};
     inline int get_width() {return width;};
@@ -133,6 +136,7 @@ public:
     vertex index_to_vertex(int index);
     void edit_tile(int type, int index);
     Tile* get_tile_at(int index);
+    Block* get_block_at(int index);
     void erase_tile_at(int index);
     void draw();
 };
@@ -146,6 +150,16 @@ Tile* Cube::get_tile_at(int index)
     for (int i=0; i<this->tiles.size(); ++i) {
         if (this->tiles.at(i)->get_index() == index) {
             return this->tiles.at(i);
+        }
+    }
+    return NULL;
+}
+
+Block* Cube::get_block_at(int index)
+{
+    for (int i=0; i<this->blocks.size(); ++i) {
+        if (this->blocks.at(i)->get_index() == index) {
+            return this->blocks.at(i);
         }
     }
     return NULL;
@@ -219,6 +233,7 @@ void Cube::draw()
         int index = tile->get_index();
         coords xyz = Index_to_XYZ(index, this->width);
         // TODO: gotta be a better way to do this logic
+        // TODO: move the front/back face logic to the Cube init
         bool front_face = !(xyz.x && xyz.y && xyz.z);
         bool back_face  = !((xyz.x+1)%width && (xyz.y+1)%width && (xyz.z+1)%width);
         if ( front_face || back_face){
@@ -226,6 +241,15 @@ void Cube::draw()
             if (vert.z>0) {
                 tile->draw(vert.x, vert.y, vert.z);
             }
+        }
+    }
+    Block* block;
+    for (int i=0; i<this->blocks.size(); ++i) {
+        block = this->blocks.at(i);
+        int index = block->get_index();
+        vertex vert = index_to_vertex(index);
+        if (vert.z>0) {
+            block->draw(vert.x, vert.y, vert.z);
         }
     }
 }
