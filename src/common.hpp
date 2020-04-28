@@ -24,6 +24,7 @@ struct angles
 
 enum axis
 {
+    // TODO: how to use these only when namespaced??
     x=0,
     y,
     z,

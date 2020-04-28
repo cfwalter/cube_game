@@ -132,7 +132,7 @@ direction Selector::move(direction dir)
 
     // Block logic
     if (move_success && this->held_block) {
-        this->held_block->set_old_vertex(this->cube->index_to_vertex(this->index));
+        this->held_block->set_old_index(this->index);
         this->held_block->set_index(i);
         this->held_block->start_move();
     }

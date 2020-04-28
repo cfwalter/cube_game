@@ -213,11 +213,9 @@ void Cube::draw()
     Block* block;
     for (int i=0; i<this->blocks.size(); ++i) {
         block = this->blocks.at(i);
-        int index = block->get_index();
-        vertex vert = index_to_vertex(index);
-        if (vert.z>0) {
-            block->draw(vert.x, vert.y, vert.z);
-        }
+        vertex current_vert = index_to_vertex(block->get_index());
+        vertex old_vert = index_to_vertex(block->get_old_index());
+        block->draw(current_vert, old_vert);
     }
 }
 
@@ -226,7 +224,7 @@ vertex Cube::coords_to_vertex(coords xyz)
     vertex o = this->origin;
     angles a = this->get_heading_rads();
     const double w = 1.0;
-    double space = w/(width-1); // 1/nw * w
+    double space = w/(this->width-1); // 1/nw * w
     double half_width = w/2;
     double x = xyz.x * space - half_width;
     double y = xyz.y * space - half_width;
