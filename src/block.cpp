@@ -1,4 +1,5 @@
 #include "block.hpp"
+#include "cube.hpp"
 
 
 SDL_Surface* Block::img_surface = IMG_Load("Resources/pink_diamond.png");
@@ -26,4 +27,9 @@ void Block::draw(vertex current, vertex old)
     double hz = h/current.z;
     SDL_Rect r = {int(u-wz*0.5), int(v-hz*0.5), int(wz), int(hz)};
     SDL_RenderCopy(this->rend, img_texture, NULL, &r);
+}
+
+bool Block::move(int index)
+{
+    return !this->cube->get_block_at(index);
 }

@@ -28,7 +28,8 @@ public:
                 // tiles.push_back(new       Tile(i,r));
             // }
         }
-        blocks.push_back(new Block(5,r));
+        blocks.push_back(new Block(5, this, r));
+        blocks.push_back(new Block(16, this, r));
     };
     inline vertex get_origin() {return origin;};
     inline int get_width() {return width;};

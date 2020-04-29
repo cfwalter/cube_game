@@ -22,6 +22,7 @@ public :
     inline Selector(SDL_Renderer * r, int i, Cube* c)
     {
         index=i; holding=false; cube=c; move_frame=0; hold_frame=0;
+        held_block = NULL;
         rend = r;
         closed_box_texture = SDL_CreateTextureFromSurface(rend, closed_box_surface);
         open_box_texture = SDL_CreateTextureFromSurface(rend, open_box_surface);
@@ -55,7 +56,6 @@ void Selector::update()
 
 void Selector::draw()
 {
-    // TODO: break this out into an update function
     vertex vert = this->cube->index_to_vertex(this->index);
     if (this->move_frame) {
         vertex old_vert = this->cube->index_to_vertex(this->old_index);
@@ -129,16 +129,20 @@ direction Selector::move(direction dir)
         this->move_frame = 1;
         return direction::null;
     }
-    bool move_success = this->cube->get_tile_at(i)->is_walkable();
+    bool tile_success = this->cube->get_tile_at(i)->is_walkable();
+    bool block_success = true;
 
     // Block logic
-    if (move_success && this->held_block) {
-        this->held_block->set_old_index(this->index);
-        this->held_block->set_index(i);
-        this->held_block->start_move();
+    if (tile_success && this->held_block) {
+        block_success = this->held_block->move(i);
+        if (block_success) {
+            this->held_block->set_old_index(this->index);
+            this->held_block->set_index(i);
+            this->held_block->start_move();
+        }
     }
 
-    if (move_success) {
+    if (tile_success && block_success) {
         this->cube->get_tile_at(this->index)->on_exit();
         this->old_index = this->index;
         this->index = i;
