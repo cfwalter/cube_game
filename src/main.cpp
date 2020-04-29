@@ -1,21 +1,5 @@
-// std imports
-#include <stdlib.h>
-#include <math.h>
-#include <bitset>
-#include <map>
-#include <vector>
-#include <math.h>
-#include <iostream>
-#include <stdio.h>
-
-// SDL imports
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_timer.h>
-#include <SDL2/SDL_image.h>
-#include <SDL_ttf.h>
-#include <SDL2/SDL_mixer.h>
-
 // local imports
+#include "main.hpp"
 #include "constants.hpp"
 #include "quat.hpp"
 #include "cube.hpp"

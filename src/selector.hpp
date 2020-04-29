@@ -1,5 +1,6 @@
 #ifndef SELECTOR_HPP
 #define SELECTOR_HPP
+#include "main.hpp"
 #include "cube.hpp"
 
 class Selector {

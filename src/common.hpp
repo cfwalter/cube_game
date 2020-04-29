@@ -1,5 +1,6 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
+#include "quat.hpp"
 
 struct vertex  // rendering 3D graphics
 {
@@ -39,5 +40,17 @@ enum direction
     left,
     null,
 };
+
+float DegToRad(int deg);
+
+float RadToDeg(float rad);
+
+void AddAxis(coords* xyz, int n, axis a);
+
+coords Index_to_XYZ(int index, int width);
+
+int XYZ_to_index(coords xyz, int width);
+
+vertex Rotate(vertex v, angles a);
 
 #endif
