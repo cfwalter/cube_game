@@ -41,6 +41,21 @@ enum direction
     null,
 };
 
+enum GAMEPLAY_OBJ_TYPE
+{
+    GOT_SELECTOR=0,
+    GOT_BLOCK,
+    GOT_TILE,
+};
+
+enum TILE_TYPE
+{
+    TT_OPEN_TILE=1,
+    TT_WALL_TILE,
+    TT_POINTER_ONLY_TILE,
+    TT_BLOCK_ONLY_TILE,
+};
+
 float DegToRad(int deg);
 
 float RadToDeg(float rad);

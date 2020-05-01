@@ -6,11 +6,13 @@
 SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/point_hand.png");
 SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/pinch_hand.png");
 
+
 void Selector::update()
 {
     if (this->move_frame) { this->move_frame += 1; }
     if (this->move_frame == this->move_frames_total) { this->move_frame = 0; }
 }
+
 
 void Selector::draw()
 {
@@ -31,6 +33,7 @@ void Selector::draw()
     SDL_Rect r = {u-20, v-20, 20, 20};
     SDL_RenderCopy(this->rend, tex, NULL, &r);
 }
+
 
 direction Selector::move(direction dir)
 {
@@ -94,7 +97,7 @@ direction Selector::move(direction dir)
         this->move_frame = 1;
         return direction::null;
     }
-    bool tile_success = this->cube->get_tile_at(i)->is_walkable();
+    bool tile_success = this->cube->get_tile_at(i)->is_walkable(GAMEPLAY_OBJ_TYPE::GOT_SELECTOR);
     bool block_success = true;
 
     // Block logic

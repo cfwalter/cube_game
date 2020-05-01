@@ -50,7 +50,8 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         }
 
         // process input
-        pause_state = keys[SDLK_ESCAPE] || keys[SDLK_p];
+        pause_state = keys[SDLK_p];
+        quit_state = keys[SDLK_ESCAPE] || quit_state;
         bool up__key = keys[SDLK_w] || keys[SDLK_UP];
         bool rgt_key = keys[SDLK_a] || keys[SDLK_RIGHT];
         bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
@@ -63,8 +64,26 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         }
 
         if (play_cube.get_edit_mode()) {
-            if (keys[SDLK_1]) {play_cube.edit_tile(1, select.get_index()); keys[SDLK_1]=false;}
-            if (keys[SDLK_2]) {play_cube.edit_tile(2, select.get_index()); keys[SDLK_2]=false;}
+            if (keys[SDLK_1]) {
+                play_cube.edit_tile(TILE_TYPE::TT_OPEN_TILE, select.get_index());
+                keys[SDLK_1]=false;
+            }
+            if (keys[SDLK_2]) {
+                play_cube.edit_tile(TILE_TYPE::TT_WALL_TILE, select.get_index());
+                keys[SDLK_2]=false;
+            }
+            if (keys[SDLK_3]) {
+                play_cube.edit_tile(TILE_TYPE::TT_POINTER_ONLY_TILE, select.get_index());
+                keys[SDLK_3]=false;
+            }
+            if (keys[SDLK_4]) {
+                play_cube.edit_tile(TILE_TYPE::TT_BLOCK_ONLY_TILE, select.get_index());
+                keys[SDLK_4]=false;
+            }
+            if (keys[SDLK_b]) {
+                play_cube.toggle_block(select.get_index());
+                keys[SDLK_b]=false;
+            }
         }
 
         if (play_cube.is_heading_square() && dir_key_pressed) {
@@ -73,6 +92,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             if (rgt_key) dir = direction::right;
             if (dwn_key) dir = direction::down;
             if (lft_key) dir = direction::left;
+            // TODO: refactor this so select.move calls cube.rotate(dir);
             rotate_cube = select.move(dir);
         }
         if (keys[SDLK_x]) {

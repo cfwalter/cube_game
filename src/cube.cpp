@@ -34,16 +34,38 @@ void Cube::erase_tile_at(int index)
     }
 }
 
-void Cube::edit_tile(int type, int index)
+void Cube::erase_block_at(int index)
+{
+    for (int i=0; i<this->blocks.size(); ++i) {
+        if (this->blocks.at(i)->get_index() == index) {
+            this->blocks.erase(this->blocks.begin() + i);
+            return;
+        }
+    }
+}
+
+void Cube::edit_tile(TILE_TYPE type, int index)
 {
     Tile* tile;
     switch(type) {
-        case 1: tile = new    Tile(index, this->rend); break;
-        case 2: tile = new RedTile(index, this->rend); break;
+        case TT_OPEN_TILE: tile = new OpenTile(index, this->rend); break;
+        case TT_WALL_TILE: tile = new WallTile(index, this->rend); break;
+        case TT_POINTER_ONLY_TILE: tile = new PointerOnlyTile(index, this->rend); break;
+        case TT_BLOCK_ONLY_TILE: tile = new BlockOnlyTile(index, this->rend); break;
         default: return;
     }
     this->erase_tile_at(index);
     this->tiles.push_back(tile);
+}
+
+void Cube::toggle_block(int index)
+{
+    Block* b = this->get_block_at(index);
+    if (!b) {
+        this->blocks.push_back(new Block(index, this, this->rend));
+        return;
+    }
+    this->erase_block_at(index);
 }
 
 void Cube::rotate(direction dir)

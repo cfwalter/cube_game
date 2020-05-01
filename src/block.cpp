@@ -1,4 +1,5 @@
 #include "block.hpp"
+#include "tile.hpp"
 #include "cube.hpp"
 
 
@@ -41,13 +42,12 @@ bool Block::move(int dx, int dy, int dz)
     bool out_x = next_xyz.x < 0 || next_xyz.x > max;
     bool out_y = next_xyz.y < 0 || next_xyz.y > max;
     bool out_z = next_xyz.z < 0 || next_xyz.z > max;
-    if (out_x || out_y || out_z) {
-        return false;
-    }
+    if (out_x || out_y || out_z) return false;
 
     int next_index = XYZ_to_index(next_xyz, this->cube->get_width());
 
-    // TODO: check tile at next index, return tile.is_walkable
+    Tile* next_tile = this->cube->get_tile_at(next_index);
+    if (!next_tile->is_walkable(GAMEPLAY_OBJ_TYPE::GOT_BLOCK)) return false;
     Block* next_block = this->cube->get_block_at(next_index);
 
     if (!next_block || next_block->move(dx, dy, dz)) {

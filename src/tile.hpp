@@ -5,7 +5,6 @@
 class Tile {
 protected:
     int index;
-    bool solid = false;
     static SDL_Surface* img_surface;
     SDL_Texture* img_texture;
     SDL_Renderer * rend;
@@ -21,36 +20,73 @@ public:
         rend=r;
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     }
-    inline bool is_walkable() {return !this->solid;};
+    inline virtual bool is_walkable(int type) {return true;};
     inline virtual void on_exit() {};
 };
 
-class RedTile : public Tile {
+
+class OpenTile : public Tile {
 protected:
     static SDL_Surface* img_surface;
 public:
-    RedTile(int i, SDL_Renderer * r) : Tile(i, r)
+    OpenTile(int i, SDL_Renderer * r) : Tile(i, r)
     {
-        solid = true;
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
+    inline bool is_walkable(int type) override {return true;};
 };
 
-class YellowTile : public Tile {
+
+class WallTile : public Tile {
 protected:
     static SDL_Surface* img_surface;
-    static SDL_Surface* red_img_surface;
 public:
-    YellowTile(int i, SDL_Renderer * r) : Tile(i, r)
+    WallTile(int i, SDL_Renderer * r) : Tile(i, r)
     {
-        solid = false;
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
-    void on_exit() override
-    {
-        this->solid = true;
-        img_texture = SDL_CreateTextureFromSurface(rend, red_img_surface);
-    };
+    inline bool is_walkable(int type) override {return false;};
 };
+
+
+class PointerOnlyTile : public Tile {
+protected:
+    static SDL_Surface* img_surface;
+public:
+    PointerOnlyTile(int i, SDL_Renderer * r) : Tile(i, r)
+    {
+        img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
+    };
+    inline bool is_walkable(int type) override {return type == GAMEPLAY_OBJ_TYPE::GOT_SELECTOR;};
+};
+
+
+class BlockOnlyTile : public Tile {
+protected:
+    static SDL_Surface* img_surface;
+public:
+    BlockOnlyTile(int i, SDL_Renderer * r) : Tile(i, r)
+    {
+        img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
+    };
+    inline bool is_walkable(int type) override {return type == GAMEPLAY_OBJ_TYPE::GOT_BLOCK;};
+};
+
+// class YellowTile : public Tile {
+// protected:
+//     static SDL_Surface* img_surface;
+//     static SDL_Surface* red_img_surface;
+// public:
+//     YellowTile(int i, SDL_Renderer * r) : Tile(i, r)
+//     {
+//         solid = false;
+//         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
+//     };
+//     void on_exit() override
+//     {
+//         this->solid = true;
+//         img_texture = SDL_CreateTextureFromSurface(rend, red_img_surface);
+//     };
+// };
 
 #endif
