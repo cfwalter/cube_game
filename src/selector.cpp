@@ -1,8 +1,10 @@
 #include "common.hpp"
 #include "selector.hpp"
 
-SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/open_box.png");
-SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/closed_box.png");
+// SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/open_box.png");
+// SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/closed_box.png");
+SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/point_hand.png");
+SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/pinch_hand.png");
 
 void Selector::update()
 {
@@ -26,7 +28,7 @@ void Selector::draw()
     int w, h;
     SDL_Texture* tex = (this->holding? this->closed_box_texture : this->open_box_texture);
     SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-    SDL_Rect r = {int(u-w/vert.z*0.5), int(v-w/vert.z*0.5), int(w/vert.z), int(h/vert.z)};
+    SDL_Rect r = {u-20, v-20, 20, 20};
     SDL_RenderCopy(this->rend, tex, NULL, &r);
 }
 
@@ -93,17 +95,14 @@ direction Selector::move(direction dir)
         return direction::null;
     }
     bool tile_success = this->cube->get_tile_at(i)->is_walkable();
-    printf("hello world %i\n", tile_success);
     bool block_success = true;
 
     // Block logic
     if (tile_success && this->held_block) {
         block_success = this->held_block->move(dx, dy, dz);
     }
-    printf("goodby world %i\n", block_success);
 
     if (tile_success && block_success) {
-        printf("nightman %i\n", i);
         this->cube->get_tile_at(this->index)->on_exit();
         this->old_index = this->index;
         this->index = i;

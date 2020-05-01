@@ -49,7 +49,7 @@ bool Block::move(int dx, int dy, int dz)
 
     // TODO: check tile at next index, return tile.is_walkable
     Block* next_block = this->cube->get_block_at(next_index);
-    // if () return true;
+
     if (!next_block || next_block->move(dx, dy, dz)) {
         this->old_index = this->index;
         this->index = next_index;
