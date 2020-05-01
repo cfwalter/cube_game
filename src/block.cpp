@@ -29,7 +29,32 @@ void Block::draw(vertex current, vertex old)
     SDL_RenderCopy(this->rend, img_texture, NULL, &r);
 }
 
-bool Block::move(int index)
+bool Block::move(int dx, int dy, int dz)
 {
-    return !this->cube->get_block_at(index);
+    coords curr_xyz = Index_to_XYZ(this->index, this->cube->get_width());
+    coords next_xyz;
+    next_xyz.x = curr_xyz.x + dx;
+    next_xyz.y = curr_xyz.y + dy;
+    next_xyz.z = curr_xyz.z + dz;
+
+    const int max = this->cube->get_width()-1;
+    bool out_x = next_xyz.x < 0 || next_xyz.x > max;
+    bool out_y = next_xyz.y < 0 || next_xyz.y > max;
+    bool out_z = next_xyz.z < 0 || next_xyz.z > max;
+    if (out_x || out_y || out_z) {
+        return false;
+    }
+
+    int next_index = XYZ_to_index(next_xyz, this->cube->get_width());
+
+    // TODO: check tile at next index, return tile.is_walkable
+    Block* next_block = this->cube->get_block_at(next_index);
+    // if () return true;
+    if (!next_block || next_block->move(dx, dy, dz)) {
+        this->old_index = this->index;
+        this->index = next_index;
+        this->move_frame = 1;
+        return true;
+    }
+    return false;
 }
