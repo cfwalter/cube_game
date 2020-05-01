@@ -9,10 +9,10 @@ private:
     int old_index;
     const int move_frames_total = 10;
     int move_frame;
-    static SDL_Surface* closed_box_surface;
-    SDL_Texture* closed_box_texture;
-    static SDL_Surface* open_box_surface;
-    SDL_Texture* open_box_texture;
+    static SDL_Surface* closed_surface;
+    SDL_Texture* closed_texture;
+    static SDL_Surface* open_surface;
+    SDL_Texture* open_texture;
     SDL_Renderer * rend;
     Cube* cube;
     Block* held_block;
@@ -22,8 +22,8 @@ public :
         index=i; cube=c; move_frame=0;
         held_block = NULL;
         rend = r;
-        closed_box_texture = SDL_CreateTextureFromSurface(rend, closed_box_surface);
-        open_box_texture = SDL_CreateTextureFromSurface(rend, open_box_surface);
+        closed_texture = SDL_CreateTextureFromSurface(rend, closed_surface);
+        open_texture = SDL_CreateTextureFromSurface(rend, open_surface);
     };
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};

@@ -1,10 +1,8 @@
 #include "common.hpp"
 #include "selector.hpp"
 
-// SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/open_box.png");
-// SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/closed_box.png");
-SDL_Surface* Selector::open_box_surface = IMG_Load("Resources/point_hand.png");
-SDL_Surface* Selector::closed_box_surface = IMG_Load("Resources/pinch_hand.png");
+SDL_Surface* Selector::open_surface = IMG_Load("Resources/point_hand.png");
+SDL_Surface* Selector::closed_surface = IMG_Load("Resources/pinch_hand.png");
 
 
 void Selector::update()
@@ -28,7 +26,7 @@ void Selector::draw()
     int u = FOV*vert.x/vert.z+CENTER_X;
     int v = FOV*vert.y/vert.z+CENTER_Y;
     int w, h;
-    SDL_Texture* tex = (this->is_holding()? this->closed_box_texture : this->open_box_texture);
+    SDL_Texture* tex = (this->is_holding()? this->closed_texture : this->open_texture);
     SDL_QueryTexture(tex, NULL, NULL, &w, &h);
     SDL_Rect r = {u-20, v-20, 20, 20};
     SDL_RenderCopy(this->rend, tex, NULL, &r);
