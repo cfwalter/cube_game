@@ -12,7 +12,7 @@ void Tile::draw(double x, double y, double z)
     SDL_RenderCopy(this->rend, img_texture, NULL, &r);
 }
 
-SDL_Surface* Tile::img_surface = IMG_Load("Resources/open_tile.png");
+SDL_Surface* Tile::img_surface = IMG_Load("Resources/none.png");
 SDL_Surface* OpenTile::img_surface = IMG_Load("Resources/open_tile.png");
 SDL_Surface* WallTile::img_surface = IMG_Load("Resources/wall_tile.png");
 SDL_Surface* PointerOnlyTile::img_surface = IMG_Load("Resources/pointer_only_tile.png");

@@ -72,6 +72,16 @@ public:
     inline bool is_walkable(int type) override {return type == GAMEPLAY_OBJ_TYPE::GOT_BLOCK;};
 };
 
+
+class EmptyTile : public Tile {
+public:
+    EmptyTile(int i, SDL_Renderer * r) : Tile(i, r)
+    {
+        img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
+    };
+    inline bool is_walkable(int type) override {return type == GAMEPLAY_OBJ_TYPE::GOT_BLOCK;};
+};
+
 // class YellowTile : public Tile {
 // protected:
 //     static SDL_Surface* img_surface;

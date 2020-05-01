@@ -54,6 +54,7 @@ enum TILE_TYPE
     TT_WALL_TILE,
     TT_POINTER_ONLY_TILE,
     TT_BLOCK_ONLY_TILE,
+    TT_EMPTY_TILE,
 };
 
 float DegToRad(int deg);

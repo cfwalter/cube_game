@@ -80,6 +80,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
                 play_cube.edit_tile(TILE_TYPE::TT_BLOCK_ONLY_TILE, select.get_index());
                 keys[SDLK_4]=false;
             }
+            if (keys[SDLK_5]) {
+                play_cube.edit_tile(TILE_TYPE::TT_EMPTY_TILE, select.get_index());
+                keys[SDLK_5]=false;
+            }
             if (keys[SDLK_b]) {
                 play_cube.toggle_block(select.get_index());
                 keys[SDLK_b]=false;
@@ -222,7 +226,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_Window* win = SDL_CreateWindow("Untitled Cube Game",
+    SDL_Window* win = SDL_CreateWindow("CUBE",
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
                                        WINDOW_WIDTH, WINDOW_HEIGHT,0);

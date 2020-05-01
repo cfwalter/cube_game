@@ -22,7 +22,7 @@ public:
         origin=o; width=w; heading=h; target_heading=th; rend=r;
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
-            tiles.push_back(new Tile(i,r));
+            tiles.push_back(new OpenTile(i,r));
         }
     };
     inline vertex get_origin() {return origin;};

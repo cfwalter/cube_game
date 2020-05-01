@@ -52,6 +52,7 @@ void Cube::edit_tile(TILE_TYPE type, int index)
         case TT_WALL_TILE: tile = new WallTile(index, this->rend); break;
         case TT_POINTER_ONLY_TILE: tile = new PointerOnlyTile(index, this->rend); break;
         case TT_BLOCK_ONLY_TILE: tile = new BlockOnlyTile(index, this->rend); break;
+        case TT_EMPTY_TILE: tile = new EmptyTile(index, this->rend); break;
         default: return;
     }
     this->erase_tile_at(index);
