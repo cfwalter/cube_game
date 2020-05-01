@@ -22,14 +22,8 @@ public:
         origin=o; width=w; heading=h; target_heading=th; rend=r;
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
-            // if(i%7==1) {
-                tiles.push_back(new Tile(i,r));
-            // } else {
-                // tiles.push_back(new       Tile(i,r));
-            // }
+            tiles.push_back(new Tile(i,r));
         }
-        blocks.push_back(new Block(5, this, r));
-        blocks.push_back(new Block(16, this, r));
     };
     inline vertex get_origin() {return origin;};
     inline int get_width() {return width;};
