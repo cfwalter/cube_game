@@ -63,7 +63,19 @@ void Cube::toggle_block(int index)
 {
     Block* b = this->get_block_at(index);
     if (!b) {
-        this->blocks.push_back(new Block(index, this, this->rend));
+        const angles a = this->get_heading_rads();
+        vertex rot_x = Rotate({1,0,0}, a);
+        vertex rot_y = Rotate({0,1,0}, a);
+        vertex rot_z = Rotate({0,0,1}, a);
+        CUBE_FACE face;
+        if (rot_x.z== 1) {face = CUBE_FACE::MIN_X;}
+        if (rot_x.z==-1) {face = CUBE_FACE::MAX_X;}
+        if (rot_y.z== 1) {face = CUBE_FACE::MIN_Y;}
+        if (rot_y.z==-1) {face = CUBE_FACE::MAX_Y;}
+        if (rot_z.z== 1) {face = CUBE_FACE::MIN_Z;}
+        if (rot_z.z==-1) {face = CUBE_FACE::MAX_Z;}
+
+        this->blocks.push_back(new Block(index, face, this, this->rend));
         return;
     }
     this->erase_block_at(index);

@@ -57,6 +57,16 @@ enum TILE_TYPE
     TT_EMPTY_TILE,
 };
 
+enum CUBE_FACE
+{
+    MAX_X,
+    MIN_X,
+    MAX_Y,
+    MIN_Y,
+    MAX_Z,
+    MIN_Z,
+};
+
 float DegToRad(int deg);
 
 float RadToDeg(float rad);
