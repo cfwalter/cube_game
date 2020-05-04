@@ -26,6 +26,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     Cube play_cube = Cube(rend, {0, 0, 2}, WIDTH, {0,0,0}, {0,0,0});
 
     Selector select = Selector(rend, 0, &play_cube);
+    LinkedBlockEditor editor = LinkedBlockEditor(rend, &play_cube);
 
     bool quit_state = false;
     bool pause_state = false;
@@ -60,6 +61,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 
         if (keys[SDLK_e]) {
             play_cube.toggle_edit_mode();
+            editor.clear_selection();
             keys[SDLK_e] = false;
         }
 
@@ -100,7 +102,11 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             rotate_cube = select.move(dir);
         }
         if (keys[SDLK_x]) {
-            select.toggle_holding();
+            if (play_cube.get_edit_mode()) {
+                editor.toggle_selection(play_cube.get_block_at(select.get_index()));
+            } else {
+                select.toggle_holding();
+            }
             keys[SDLK_x] = false;
         }
 
@@ -115,8 +121,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         // clear the window
         SDL_RenderClear(rend);
 
+        SDL_SetRenderDrawColor(rend, 200, 200, 200, 255);
         play_cube.draw();
         select.draw();
+        editor.draw();
         if (play_cube.get_edit_mode()) {
             SDL_RenderCopy(rend, edit_msg_texture, NULL, &edit_msg_rect);
         }

@@ -11,6 +11,7 @@ protected:
     int old_index;
     int move_frame;
     CUBE_FACE face;
+    bool moved_already;
     static const int move_frames_total = 10;
     static const bool mobile = true;
     static SDL_Surface* front_surface;
@@ -25,6 +26,7 @@ protected:
     SDL_Texture*  down_texture;
     SDL_Renderer * rend;
     Cube* cube;
+    std::vector <Block*> linked_blocks;
 public:
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
@@ -36,6 +38,7 @@ public:
         cube=c;
         rend=r;
         move_frame=0;
+        moved_already = false;
         front_texture = SDL_CreateTextureFromSurface(rend, front_surface);
         left_texture = SDL_CreateTextureFromSurface(rend, left_surface);
         right_texture = SDL_CreateTextureFromSurface(rend, right_surface);
@@ -44,12 +47,23 @@ public:
     }
     inline bool is_mobile() {return mobile;};
     inline void set_old_index(int v) {old_index = v;};
-    inline int  get_old_index() {return old_index;};
+    inline int  get_old_index() {return old_index;}
     inline void start_move() {move_frame = 1;};
+    inline void reset_moved_already() {this->moved_already = false;};
+    inline void toggle_linked_block(Block* b) {
+        for (int i=0; i<linked_blocks.size(); ++i) {
+            if (linked_blocks.at(i) == b) {
+                linked_blocks.erase(linked_blocks.begin()+i);
+                return;
+            }
+        }
+        linked_blocks.push_back(b);
+    };
+    vertex get_current_vertex();
     void set_face(CUBE_FACE f) {this->face = f;}
     bool move(int dx, int dy, int dz);
     void update();
-    void draw(vertex current, vertex old);
+    void draw();
 };
 
 #endif

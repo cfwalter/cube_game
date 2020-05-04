@@ -119,6 +119,7 @@ void Cube::update()
 
     for (int i=0; i<this->blocks.size(); ++i) {
         this->blocks.at(i)->update();
+        this->blocks.at(i)->reset_moved_already();
     }
 }
 
@@ -144,9 +145,7 @@ void Cube::draw()
     Block* block;
     for (int i=0; i<this->blocks.size(); ++i) {
         block = this->blocks.at(i);
-        vertex current_vert = index_to_vertex(block->get_index());
-        vertex old_vert = index_to_vertex(block->get_old_index());
-        block->draw(current_vert, old_vert);
+        block->draw();
     }
 }
 

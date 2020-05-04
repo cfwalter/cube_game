@@ -39,4 +39,42 @@ public :
     void draw();
 };
 
+class LinkedBlockEditor {
+private:
+    Cube* cube;
+    Block* selected_block;
+    SDL_Renderer * rend;
+    static SDL_Surface*  selected_surface;
+    SDL_Texture*  selected_texture;
+public:
+    inline LinkedBlockEditor(SDL_Renderer * r, Cube* c)
+    {
+        rend=r;
+        cube=c;
+        selected_block=NULL;
+        selected_texture = SDL_CreateTextureFromSurface(rend, selected_surface);
+    };
+    inline void clear_selection() {this->selected_block=NULL;};
+    inline void toggle_selection(Block* new_block) {
+        if (!this->selected_block) {this->selected_block = new_block; return;}
+        if (new_block == this->selected_block) {this->selected_block = NULL; return;}
+        new_block->toggle_linked_block(this->selected_block);
+        this->selected_block->toggle_linked_block(new_block);
+        this->selected_block = NULL;
+    };
+    inline void draw() {
+        if (!this->selected_block) return;
+        vertex vert = this->cube->index_to_vertex(this->selected_block->get_index());
+        if (vert.z <= 0) return;
+        int u = FOV*vert.x/vert.z+CENTER_X;
+        int v = FOV*vert.y/vert.z+CENTER_Y;
+        int w, h;
+        SDL_QueryTexture(selected_texture, NULL, NULL, &w, &h);
+        double wz = w/vert.z;
+        double hz = h/vert.z;
+        SDL_Rect r = {int(u-wz*0.5), int(v-hz*0.5), int(wz), int(hz)};
+        SDL_RenderCopy(this->rend, selected_texture, NULL, &r);
+    }
+};
+
 #endif
