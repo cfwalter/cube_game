@@ -46,6 +46,7 @@ public:
     inline void set_old_index(int v) {old_index = v;};
     inline int  get_old_index() {return old_index;};
     inline void start_move() {move_frame = 1;};
+    void set_face(CUBE_FACE f) {this->face = f;}
     bool move(int dx, int dy, int dz);
     void update();
     void draw(vertex current, vertex old);

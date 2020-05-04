@@ -75,10 +75,24 @@ direction Selector::move(direction dir)
         case direction::right: AddAxis(&next_xyz,  du, u_axis); break;
         case direction::null: break;
     }
-    bool out_x = next_xyz.x < 0 || next_xyz.x > max;
-    bool out_y = next_xyz.y < 0 || next_xyz.y > max;
-    bool out_z = next_xyz.z < 0 || next_xyz.z > max;
+    bool max_x = next_xyz.x > max;
+    bool max_y = next_xyz.y > max;
+    bool max_z = next_xyz.z > max;
+    bool min_x = next_xyz.x < 0;
+    bool min_y = next_xyz.y < 0;
+    bool min_z = next_xyz.z < 0;
+    bool out_x = min_x || max_x;
+    bool out_y = min_y || max_y;
+    bool out_z = min_z || max_z;
     if (out_x || out_y || out_z) {
+        if (this->held_block) {
+            if (max_x) this->held_block->set_face(CUBE_FACE::MAX_X);
+            if (max_y) this->held_block->set_face(CUBE_FACE::MAX_Y);
+            if (max_z) this->held_block->set_face(CUBE_FACE::MAX_Z);
+            if (min_x) this->held_block->set_face(CUBE_FACE::MIN_X);
+            if (min_y) this->held_block->set_face(CUBE_FACE::MIN_Y);
+            if (min_z) this->held_block->set_face(CUBE_FACE::MIN_Z);
+        }
         return dir;
     }
 
