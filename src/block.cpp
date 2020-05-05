@@ -76,7 +76,7 @@ bool Block::move(int dx, int dy, int dz)
     if (this->moved_already) {
         return true;
     }
-    this->moved_already = true;
+    this->moved_already = true;  // already_moved is reset after each frame, ensure that it won't be moved more than once
     coords curr_xyz = Index_to_XYZ(this->index, this->cube->get_width());
     coords next_xyz;
     next_xyz.x = curr_xyz.x + dx;
@@ -103,12 +103,10 @@ bool Block::move(int dx, int dy, int dz)
     this->old_index = this->index;
     this->index = next_index;
     this->move_frame = 1;
-    this->moved_already = true;  // already_moved is reset after each frame, ensure that it won't be moved more than once
 
     // 3. attempt to move linked blocks
     for (int i=0; i<this->linked_blocks.size(); ++i) {
         this->linked_blocks.at(i)->move(dx, dy, dz);
-        this->linked_blocks.at(i)->reset_moved_already();
     }
 
     return true;

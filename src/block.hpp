@@ -59,6 +59,14 @@ public:
         }
         linked_blocks.push_back(b);
     };
+    inline void remove_linked_block(Block* b) {
+        for (int i=0; i<linked_blocks.size(); ++i) {
+            if (linked_blocks.at(i) == b) {
+                linked_blocks.erase(linked_blocks.begin()+i);
+                return;
+            }
+        }
+    };
     vertex get_current_vertex();
     void set_face(CUBE_FACE f) {this->face = f;}
     bool move(int dx, int dy, int dz);

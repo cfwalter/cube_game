@@ -56,6 +56,7 @@ public:
     };
     inline void clear_selection() {this->selected_block=NULL;};
     inline void toggle_selection(Block* new_block) {
+        if (!new_block) return;
         if (!this->selected_block) {this->selected_block = new_block; return;}
         if (new_block == this->selected_block) {this->selected_block = NULL; return;}
         new_block->toggle_linked_block(this->selected_block);

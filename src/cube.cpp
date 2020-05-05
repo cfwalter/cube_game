@@ -38,6 +38,10 @@ void Cube::erase_block_at(int index)
 {
     for (int i=0; i<this->blocks.size(); ++i) {
         if (this->blocks.at(i)->get_index() == index) {
+            Block * b = this->blocks.at(i);
+             for (int j=0; j<this->blocks.size(); ++j) { //remove block from all linked clusters
+                this->blocks.at(j)->remove_linked_block(b);
+             }
             this->blocks.erase(this->blocks.begin() + i);
             return;
         }
