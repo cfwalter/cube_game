@@ -17,6 +17,13 @@ void AddAxis(coords* xyz, int n, axis a)
     if (a==axis::z) xyz->z += n;
 }
 
+double get_axis(vertex xyz, axis a)
+{
+    if (a==axis::x) return xyz.x;
+    if (a==axis::y) return xyz.y;
+    if (a==axis::z) return xyz.z;
+}
+
 coords Index_to_XYZ(int index, int width)
 {
     return {(index % width), ((index / width)%width), (index / (width*width))};

@@ -73,6 +73,8 @@ float RadToDeg(float rad);
 
 void AddAxis(coords* xyz, int n, axis a);
 
+double get_axis(vertex xyz, axis a);
+
 coords Index_to_XYZ(int index, int width);
 
 int XYZ_to_index(coords xyz, int width);

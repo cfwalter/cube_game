@@ -172,3 +172,47 @@ vertex Cube::index_to_vertex(int index)
 {
     return this->coords_to_vertex(Index_to_XYZ(index, width));
 }
+
+
+coords Cube::get_next_coords(axis axis_1, axis axis_2, direction dir, int current_i)
+{
+    const angles a = this->get_heading_rads();
+    vertex rot_x = Rotate({1,0,0}, a);
+    vertex rot_y = Rotate({0,1,0}, a);
+    vertex rot_z = Rotate({0,0,1}, a);
+    axis u_axis, v_axis; // u=left/right, v=up/down
+    int lft_u, rgt_u, top_v, bot_v;
+    const int max = this->width-1;
+    int dx, dy, dz;
+    double x1 = get_axis(rot_x, axis_1); double x2 = get_axis(rot_x, axis_2);
+    double y1 = get_axis(rot_y, axis_1); double y2 = get_axis(rot_y, axis_2);
+    double z1 = get_axis(rot_z, axis_1); double z2 = get_axis(rot_z, axis_2);
+
+    if (x1== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
+    if (x1==-1) {u_axis=axis::x; lft_u=max; rgt_u=0;}
+    if (y1== 1) {u_axis=axis::y; lft_u=0;   rgt_u=max;}
+    if (y1==-1) {u_axis=axis::y; lft_u=max; rgt_u=0;}
+    if (z1== 1) {u_axis=axis::z; lft_u=0;   rgt_u=max;}
+    if (z1==-1) {u_axis=axis::z; lft_u=max; rgt_u=0;}
+
+    if (x2== 1) {v_axis=axis::x; top_v=0;   bot_v=max;}
+    if (x2==-1) {v_axis=axis::x; top_v=max; bot_v=0;}
+    if (y2== 1) {v_axis=axis::y; top_v=0;   bot_v=max;}
+    if (y2==-1) {v_axis=axis::y; top_v=max; bot_v=0;}
+    if (z2== 1) {v_axis=axis::z; top_v=0;   bot_v=max;}
+    if (z2==-1) {v_axis=axis::z; top_v=max; bot_v=0;}
+
+    int du = (rgt_u - lft_u) / (max);
+    int dv = (bot_v - top_v) / (max);
+
+    coords curr_xyz = Index_to_XYZ(current_i, this->width);
+    coords next_xyz = curr_xyz;  // keep track of original, but alter the new
+    switch(dir) {
+        case direction::up:    AddAxis(&next_xyz, -dv, v_axis); break;
+        case direction::down:  AddAxis(&next_xyz,  dv, v_axis); break;
+        case direction::left:  AddAxis(&next_xyz, -du, u_axis); break;
+        case direction::right: AddAxis(&next_xyz,  du, u_axis); break;
+        case direction::null: break;
+    }
+    return next_xyz;
+}

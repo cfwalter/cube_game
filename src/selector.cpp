@@ -40,49 +40,13 @@ direction Selector::move(direction dir)
     if (this->move_frame) {return direction::null;}  //don't collect input during move animation
 
     // Cube logic
-    // get rotations of x,y,z with current angle, to see which way is up/down and left/right
-    const angles a = this->cube->get_heading_rads();
-    vertex rot_x = Rotate({1,0,0}, a);
-    vertex rot_y = Rotate({0,1,0}, a);
-    vertex rot_z = Rotate({0,0,1}, a);
-    axis u_axis, v_axis; // u=left/right, v=up/down
-    int lft_u, rgt_u, top_v, bot_v;
-    const int width = this->cube->get_width();
-    const int max = width-1;
-    int dx, dy, dz;
+    const int max = this->cube->get_width()-1;
+    coords curr_xyz = Index_to_XYZ(index, this->cube->get_width());
+    coords next_xyz = this->cube->get_next_coords(axis::x, axis::y, dir, this->index);
 
-    if (rot_x.x== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
-    if (rot_x.x==-1) {u_axis=axis::x; lft_u=max; rgt_u=0;}
-    if (rot_y.x== 1) {u_axis=axis::y; lft_u=0;   rgt_u=max;}
-    if (rot_y.x==-1) {u_axis=axis::y; lft_u=max; rgt_u=0;}
-    if (rot_z.x== 1) {u_axis=axis::z; lft_u=0;   rgt_u=max;}
-    if (rot_z.x==-1) {u_axis=axis::z; lft_u=max; rgt_u=0;}
-
-    if (rot_x.y== 1) {v_axis=axis::x; top_v=0;   bot_v=max;}
-    if (rot_x.y==-1) {v_axis=axis::x; top_v=max; bot_v=0;}
-    if (rot_y.y== 1) {v_axis=axis::y; top_v=0;   bot_v=max;}
-    if (rot_y.y==-1) {v_axis=axis::y; top_v=max; bot_v=0;}
-    if (rot_z.y== 1) {v_axis=axis::z; top_v=0;   bot_v=max;}
-    if (rot_z.y==-1) {v_axis=axis::z; top_v=max; bot_v=0;}
-
-    int du = (rgt_u - lft_u) / (max);
-    int dv = (bot_v - top_v) / (max);
-
-    coords curr_xyz = Index_to_XYZ(index, width);
-    coords next_xyz = curr_xyz;  // keep track of original, but alter the new
-    switch(dir) {
-        case direction::up:    AddAxis(&next_xyz, -dv, v_axis); break;
-        case direction::down:  AddAxis(&next_xyz,  dv, v_axis); break;
-        case direction::left:  AddAxis(&next_xyz, -du, u_axis); break;
-        case direction::right: AddAxis(&next_xyz,  du, u_axis); break;
-        case direction::null: break;
-    }
-    bool max_x = next_xyz.x > max;
-    bool max_y = next_xyz.y > max;
-    bool max_z = next_xyz.z > max;
-    bool min_x = next_xyz.x < 0;
-    bool min_y = next_xyz.y < 0;
-    bool min_z = next_xyz.z < 0;
+    bool max_x = next_xyz.x > max; bool min_x = next_xyz.x < 0;
+    bool max_y = next_xyz.y > max; bool min_y = next_xyz.y < 0;
+    bool max_z = next_xyz.z > max; bool min_z = next_xyz.z < 0;
     bool out_x = min_x || max_x;
     bool out_y = min_y || max_y;
     bool out_z = min_z || max_z;
@@ -99,12 +63,12 @@ direction Selector::move(direction dir)
     }
 
     // TODO:
-    dx = next_xyz.x - curr_xyz.x;
-    dy = next_xyz.y - curr_xyz.y;
-    dz = next_xyz.z - curr_xyz.z;
+    int dx = next_xyz.x - curr_xyz.x;
+    int dy = next_xyz.y - curr_xyz.y;
+    int dz = next_xyz.z - curr_xyz.z;
 
     // Tile logic
-    int i = XYZ_to_index(next_xyz, width);
+    int i = XYZ_to_index(next_xyz, this->cube->get_width());
     if (this->cube->get_edit_mode()) { // in edit mode, ignore all tile logic
         this->old_index = this->index;
         this->index = i;
