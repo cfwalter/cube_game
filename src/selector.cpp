@@ -42,7 +42,7 @@ direction Selector::move(direction dir)
     // Cube logic
     const int max = this->cube->get_width()-1;
     coords curr_xyz = Index_to_XYZ(index, this->cube->get_width());
-    coords next_xyz = this->cube->get_next_coords(axis::x, axis::y, dir, this->index);
+    coords next_xyz = this->cube->get_next_coords(axis::AXIS_X, axis::AXIS_Y, dir, this->index);
 
     bool max_x = next_xyz.x > max; bool min_x = next_xyz.x < 0;
     bool max_y = next_xyz.y > max; bool min_y = next_xyz.y < 0;
@@ -68,14 +68,14 @@ direction Selector::move(direction dir)
     int dz = next_xyz.z - curr_xyz.z;
 
     // Tile logic
-    int i = XYZ_to_index(next_xyz, this->cube->get_width());
+    int new_index = XYZ_to_index(next_xyz, this->cube->get_width());
     if (this->cube->get_edit_mode()) { // in edit mode, ignore all tile logic
         this->old_index = this->index;
-        this->index = i;
+        this->index = new_index;
         this->move_frame = 1;
         return direction::null;
     }
-    bool tile_success = this->cube->get_tile_at(i)->is_walkable(GAMEPLAY_OBJ_TYPE::GOT_SELECTOR);
+    bool tile_success = this->cube->get_tile_at(new_index)->is_walkable(GAMEPLAY_OBJ_TYPE::GOT_SELECTOR);
     bool block_success = true;
 
     // Block logic
@@ -86,10 +86,10 @@ direction Selector::move(direction dir)
     if (tile_success && block_success) {
         this->cube->get_tile_at(this->index)->on_exit();
         this->old_index = this->index;
-        this->index = i;
+        this->index = new_index;
         this->move_frame = 1;
     } else {
-        this->old_index = i;
+        this->old_index = new_index;
         this->move_frame = this->move_frames_total / 2;
     }
     return direction::null;

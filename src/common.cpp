@@ -12,16 +12,17 @@ float RadToDeg(float rad)
 
 void AddAxis(coords* xyz, int n, axis a)
 {
-    if (a==axis::x) xyz->x += n;
-    if (a==axis::y) xyz->y += n;
-    if (a==axis::z) xyz->z += n;
+    if (a==axis::AXIS_X) xyz->x += n;
+    if (a==axis::AXIS_Y) xyz->y += n;
+    if (a==axis::AXIS_Z) xyz->z += n;
 }
 
 double get_axis(vertex xyz, axis a)
 {
-    if (a==axis::x) return xyz.x;
-    if (a==axis::y) return xyz.y;
-    if (a==axis::z) return xyz.z;
+    if (a==axis::AXIS_X) return xyz.x;
+    if (a==axis::AXIS_Y) return xyz.y;
+    if (a==axis::AXIS_Z) return xyz.z;
+    return 0;
 }
 
 coords Index_to_XYZ(int index, int width)

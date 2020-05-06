@@ -26,10 +26,10 @@ struct angles
 enum axis
 {
     // TODO: how to use these only when namespaced??
-    x=0,
-    y,
-    z,
-    none,
+    AXIS_X=0,
+    AXIS_Y,
+    AXIS_Z,
+    AXIS_NONE,
 };
 
 enum direction

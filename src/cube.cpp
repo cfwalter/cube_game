@@ -188,19 +188,19 @@ coords Cube::get_next_coords(axis axis_1, axis axis_2, direction dir, int curren
     double y1 = get_axis(rot_y, axis_1); double y2 = get_axis(rot_y, axis_2);
     double z1 = get_axis(rot_z, axis_1); double z2 = get_axis(rot_z, axis_2);
 
-    if (x1== 1) {u_axis=axis::x; lft_u=0;   rgt_u=max;}
-    if (x1==-1) {u_axis=axis::x; lft_u=max; rgt_u=0;}
-    if (y1== 1) {u_axis=axis::y; lft_u=0;   rgt_u=max;}
-    if (y1==-1) {u_axis=axis::y; lft_u=max; rgt_u=0;}
-    if (z1== 1) {u_axis=axis::z; lft_u=0;   rgt_u=max;}
-    if (z1==-1) {u_axis=axis::z; lft_u=max; rgt_u=0;}
+    if (x1== 1) {u_axis=axis::AXIS_X; lft_u=0;   rgt_u=max;}
+    if (x1==-1) {u_axis=axis::AXIS_X; lft_u=max; rgt_u=0;}
+    if (y1== 1) {u_axis=axis::AXIS_Y; lft_u=0;   rgt_u=max;}
+    if (y1==-1) {u_axis=axis::AXIS_Y; lft_u=max; rgt_u=0;}
+    if (z1== 1) {u_axis=axis::AXIS_Z; lft_u=0;   rgt_u=max;}
+    if (z1==-1) {u_axis=axis::AXIS_Z; lft_u=max; rgt_u=0;}
 
-    if (x2== 1) {v_axis=axis::x; top_v=0;   bot_v=max;}
-    if (x2==-1) {v_axis=axis::x; top_v=max; bot_v=0;}
-    if (y2== 1) {v_axis=axis::y; top_v=0;   bot_v=max;}
-    if (y2==-1) {v_axis=axis::y; top_v=max; bot_v=0;}
-    if (z2== 1) {v_axis=axis::z; top_v=0;   bot_v=max;}
-    if (z2==-1) {v_axis=axis::z; top_v=max; bot_v=0;}
+    if (x2== 1) {v_axis=axis::AXIS_X; top_v=0;   bot_v=max;}
+    if (x2==-1) {v_axis=axis::AXIS_X; top_v=max; bot_v=0;}
+    if (y2== 1) {v_axis=axis::AXIS_Y; top_v=0;   bot_v=max;}
+    if (y2==-1) {v_axis=axis::AXIS_Y; top_v=max; bot_v=0;}
+    if (z2== 1) {v_axis=axis::AXIS_Z; top_v=0;   bot_v=max;}
+    if (z2==-1) {v_axis=axis::AXIS_Z; top_v=max; bot_v=0;}
 
     int du = (rgt_u - lft_u) / (max);
     int dv = (bot_v - top_v) / (max);
