@@ -29,28 +29,40 @@ vertex Block::get_current_vertex() {
 }
 
 
+relative_face Block::get_current_face()
+{
+    if (!this->cube->is_heading_square()) return relative_face::FACE_FRONT;
+    vertex unit_v;
+    if (this->face == MAX_X) unit_v = { 1,  0,  0};
+    if (this->face == MIN_X) unit_v = {-1,  0,  0};
+    if (this->face == MAX_Y) unit_v = { 0,  1,  0};
+    if (this->face == MIN_Y) unit_v = { 0, -1,  0};
+    if (this->face == MAX_Z) unit_v = { 0,  0,  1};
+    if (this->face == MIN_Z) unit_v = { 0,  0, -1};
+    vertex rot_v = Rotate(unit_v, this->cube->get_heading_rads());
+
+    if (rot_v.x== 1) return relative_face::FACE_RIGHT;
+    if (rot_v.x==-1) return relative_face::FACE_LEFT;
+    if (rot_v.y== 1) return relative_face::FACE_BOTTOM;
+    if (rot_v.y==-1) return relative_face::FACE_TOP;
+    if (rot_v.z== 1) return relative_face::FACE_FRONT;
+    if (rot_v.z==-1) return relative_face::FACE_BACK;
+
+    return relative_face::FACE_FRONT;
+}
+
+
 void Block::draw()
 {
     vertex current_vert = this->get_current_vertex();
     SDL_Texture* img;
-    if (this->cube->is_heading_square()){
-        vertex unit_v;
-        if (this->face == MAX_X) unit_v = { 1,  0,  0};
-        if (this->face == MIN_X) unit_v = {-1,  0,  0};
-        if (this->face == MAX_Y) unit_v = { 0,  1,  0};
-        if (this->face == MIN_Y) unit_v = { 0, -1,  0};
-        if (this->face == MAX_Z) unit_v = { 0,  0,  1};
-        if (this->face == MIN_Z) unit_v = { 0,  0, -1};
-        vertex rot_v = Rotate(unit_v, this->cube->get_heading_rads());
-
-        if (rot_v.x== 1) img = this->right_texture;
-        if (rot_v.x==-1) img = this->left_texture;
-        if (rot_v.y== 1) img = this->down_texture;
-        if (rot_v.y==-1) img = this->up_texture;
-        if (rot_v.z== 1) img = this->front_texture;
-        if (rot_v.z==-1) img = this->front_texture;
-    } else {
-        img = this->front_texture;
+    switch (this->get_current_face()) {
+        case relative_face::FACE_RIGHT:  img = this->right_texture; break;
+        case relative_face::FACE_LEFT:   img = this->left_texture; break;
+        case relative_face::FACE_BOTTOM: img = this->down_texture; break;
+        case relative_face::FACE_TOP:    img = this->up_texture; break;
+        case relative_face::FACE_FRONT:  img = this->front_texture; break;
+        case relative_face::FACE_BACK:   img = this->front_texture; break;
     }
     if (current_vert.z <= 0) return;
     int u = FOV*current_vert.x/current_vert.z+CENTER_X;

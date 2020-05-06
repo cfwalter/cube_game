@@ -5,6 +5,15 @@
 
 class Cube;
 
+enum relative_face {
+    FACE_FRONT=0,
+    FACE_BACK,
+    FACE_LEFT,
+    FACE_RIGHT,
+    FACE_TOP,
+    FACE_BOTTOM,
+};
+
 class Block {
 protected:
     int index;
@@ -69,6 +78,7 @@ public:
     };
     vertex get_current_vertex();
     void set_face(CUBE_FACE f) {this->face = f;}
+    relative_face get_current_face();
     bool move(int dx, int dy, int dz);
     void update();
     void draw();
