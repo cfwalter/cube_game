@@ -79,7 +79,7 @@ public:
     vertex get_current_vertex();
     void set_face(CUBE_FACE f) {this->face = f;}
     relative_face get_current_face();
-    bool move(int dx, int dy, int dz);
+    bool move(direction dir);
     void update();
     void draw();
 };

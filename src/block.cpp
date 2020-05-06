@@ -83,17 +83,41 @@ void Block::draw()
 }
 
 
-bool Block::move(int dx, int dy, int dz)
+bool Block::move(direction dir)
 {
     if (this->moved_already) {
         return true;
     }
     this->moved_already = true;  // already_moved is reset after each frame, ensure that it won't be moved more than once
-    coords curr_xyz = Index_to_XYZ(this->index, this->cube->get_width());
-    coords next_xyz;
-    next_xyz.x = curr_xyz.x + dx;
-    next_xyz.y = curr_xyz.y + dy;
-    next_xyz.z = curr_xyz.z + dz;
+
+    axis a1, a2;
+    relative_face rf = this->get_current_face();
+    switch (this->get_current_face()) {
+        case relative_face::FACE_RIGHT:  a1=axis::AXIS_Z; a2=axis::AXIS_Y; break;
+        case relative_face::FACE_LEFT:   a1=axis::AXIS_Z; a2=axis::AXIS_Y; break;
+        case relative_face::FACE_BOTTOM: a1=axis::AXIS_X; a2=axis::AXIS_Z; break;
+        case relative_face::FACE_TOP:    a1=axis::AXIS_X; a2=axis::AXIS_Z; break;
+        case relative_face::FACE_FRONT:  a1=axis::AXIS_X; a2=axis::AXIS_Y; break;
+        case relative_face::FACE_BACK:   a1=axis::AXIS_X; a2=axis::AXIS_Y; break;
+    }
+
+    // lil bit of movement logic, so movement directions make sense
+    if (rf == relative_face::FACE_LEFT) {
+        switch (dir) {
+            case direction::left: dir = direction::right; break;
+            case direction::right: dir = direction::left; break;
+            default: break;
+        }
+    }
+    if (rf == relative_face::FACE_TOP) {
+        switch (dir) {
+            case direction::up: dir = direction::down; break;
+            case direction::down: dir = direction::up; break;
+            default: break;
+        }
+    }
+
+    coords next_xyz = this->cube->get_next_coords(a1, a2, dir, this->index);
 
     const int max = this->cube->get_width()-1;
     bool out_x = next_xyz.x < 0 || next_xyz.x > max;
@@ -109,7 +133,7 @@ bool Block::move(int dx, int dy, int dz)
 
     // 2. push the blocks in front
     Block* next_block = this->cube->get_block_at(next_index);
-    if (next_block && !next_block->move(dx, dy, dz)) {
+    if (next_block && !next_block->move(dir)) {
         return false;
     }
     this->old_index = this->index;
@@ -118,7 +142,7 @@ bool Block::move(int dx, int dy, int dz)
 
     // 3. attempt to move linked blocks
     for (int i=0; i<this->linked_blocks.size(); ++i) {
-        this->linked_blocks.at(i)->move(dx, dy, dz);
+        this->linked_blocks.at(i)->move(dir);
     }
 
     return true;

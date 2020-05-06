@@ -80,7 +80,7 @@ direction Selector::move(direction dir)
 
     // Block logic
     if (tile_success && this->held_block) {
-        block_success = this->held_block->move(dx, dy, dz);
+        block_success = this->held_block->move(dir);
     }
 
     if (tile_success && block_success) {
