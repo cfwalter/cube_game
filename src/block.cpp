@@ -3,11 +3,11 @@
 #include "cube.hpp"
 
 
-SDL_Surface* Block::front_surface = IMG_Load("Resources/pink_diamond.png");
-SDL_Surface* Block::left_surface  = IMG_Load("Resources/pink_diamond_left.png");
-SDL_Surface* Block::right_surface = IMG_Load("Resources/pink_diamond_right.png");
-SDL_Surface* Block::up_surface    = IMG_Load("Resources/pink_diamond_up.png");
-SDL_Surface* Block::down_surface  = IMG_Load("Resources/pink_diamond_down.png");
+SDL_Surface* Block::front_surface = IMG_Load("../Resources/pink_diamond.png");
+SDL_Surface* Block::left_surface  = IMG_Load("../Resources/pink_diamond_left.png");
+SDL_Surface* Block::right_surface = IMG_Load("../Resources/pink_diamond_right.png");
+SDL_Surface* Block::up_surface    = IMG_Load("../Resources/pink_diamond_up.png");
+SDL_Surface* Block::down_surface  = IMG_Load("../Resources/pink_diamond_down.png");
 
 void Block::update()
 {

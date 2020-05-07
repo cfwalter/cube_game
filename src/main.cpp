@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
     }
 
     TTF_Init();
-    TTF_Font* font = TTF_OpenFont("Resources/Westminster.ttf", 24);
+    TTF_Font* font = TTF_OpenFont("../Resources/Westminster.ttf", 24);
     if(!font) {
         printf("TTF_OpenFont: %s\n", TTF_GetError());
         SDL_DestroyRenderer(rend);

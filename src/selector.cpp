@@ -1,10 +1,10 @@
 #include "common.hpp"
 #include "selector.hpp"
 
-SDL_Surface* Selector::open_surface = IMG_Load("Resources/point_hand.png");
-SDL_Surface* Selector::closed_surface = IMG_Load("Resources/pinch_hand.png");
+SDL_Surface* Selector::open_surface = IMG_Load("../Resources/point_hand.png");
+SDL_Surface* Selector::closed_surface = IMG_Load("../Resources/pinch_hand.png");
 
-SDL_Surface* LinkedBlockEditor::selected_surface = IMG_Load("Resources/selected.png");
+SDL_Surface* LinkedBlockEditor::selected_surface = IMG_Load("../Resources/selected.png");
 
 
 void Selector::update()
