@@ -42,7 +42,7 @@ direction Selector::move(direction dir)
     // Cube logic
     const int max = this->cube->get_width()-1;
     coords curr_xyz = Index_to_XYZ(index, this->cube->get_width());
-    coords next_xyz = this->cube->get_next_coords(axis::AXIS_X, axis::AXIS_Y, dir, this->index);
+    coords next_xyz = this->cube->get_next_coords(relative_face::FACE_FRONT, dir, this->index);
 
     bool max_x = next_xyz.x > max; bool min_x = next_xyz.x < 0;
     bool max_y = next_xyz.y > max; bool min_y = next_xyz.y < 0;

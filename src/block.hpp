@@ -5,15 +5,6 @@
 
 class Cube;
 
-enum relative_face {
-    FACE_FRONT=0,
-    FACE_BACK,
-    FACE_LEFT,
-    FACE_RIGHT,
-    FACE_TOP,
-    FACE_BOTTOM,
-};
-
 class Block {
 protected:
     int index;

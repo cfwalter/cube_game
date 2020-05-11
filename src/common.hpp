@@ -41,6 +41,15 @@ enum direction
     null,
 };
 
+enum relative_face {
+    FACE_FRONT=0,
+    FACE_BACK,
+    FACE_LEFT,
+    FACE_RIGHT,
+    FACE_TOP,
+    FACE_BOTTOM,
+};
+
 enum GAMEPLAY_OBJ_TYPE
 {
     GOT_SELECTOR=0,

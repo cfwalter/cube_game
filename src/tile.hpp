@@ -79,7 +79,7 @@ public:
     {
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
-    inline bool is_walkable(int type) override {return type == GAMEPLAY_OBJ_TYPE::GOT_BLOCK;};
+    inline bool is_walkable(int type) override {return false;};
 };
 
 // class YellowTile : public Tile {

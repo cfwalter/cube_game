@@ -54,7 +54,7 @@ public:
     void erase_tile_at(int index);
     void toggle_block(int index);
     void erase_block_at(int index);
-    coords get_next_coords(axis axis_1, axis axis_2, direction dir, int current_i);
+    coords get_next_coords(relative_face rf, direction dir, int current_i);
     void draw();
 };
 

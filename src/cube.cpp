@@ -174,7 +174,7 @@ vertex Cube::index_to_vertex(int index)
 }
 
 
-coords Cube::get_next_coords(axis axis_1, axis axis_2, direction dir, int current_i)
+coords Cube::get_next_coords(relative_face rf, direction dir, int current_i)
 {
     const angles a = this->get_heading_rads();
     vertex rot_x = Rotate({1,0,0}, a);
@@ -183,10 +183,20 @@ coords Cube::get_next_coords(axis axis_1, axis axis_2, direction dir, int curren
     axis u_axis, v_axis; // u=left/right, v=up/down
     int lft_u, rgt_u, top_v, bot_v;
     const int max = this->width-1;
-    int dx, dy, dz;
-    double x1 = get_axis(rot_x, axis_1); double x2 = get_axis(rot_x, axis_2);
-    double y1 = get_axis(rot_y, axis_1); double y2 = get_axis(rot_y, axis_2);
-    double z1 = get_axis(rot_z, axis_1); double z2 = get_axis(rot_z, axis_2);
+    int modifier_u = 1; int modifier_v = 1;
+    axis a1, a2;
+    switch (rf) {
+        case relative_face::FACE_LEFT:   modifier_u = -1;
+        case relative_face::FACE_RIGHT:  a1=axis::AXIS_Z; a2=axis::AXIS_Y; modifier_v = 0; break;
+        case relative_face::FACE_TOP:    modifier_v = -1;
+        case relative_face::FACE_BOTTOM: a1=axis::AXIS_X; a2=axis::AXIS_Z; modifier_u = 0; break;
+        case relative_face::FACE_BACK:   modifier_u = -1; modifier_v = -1;
+        case relative_face::FACE_FRONT:  a1=axis::AXIS_X; a2=axis::AXIS_Y; break;
+    }
+
+    double x1 = get_axis(rot_x, a1); double x2 = get_axis(rot_x, a2);
+    double y1 = get_axis(rot_y, a1); double y2 = get_axis(rot_y, a2);
+    double z1 = get_axis(rot_z, a1); double z2 = get_axis(rot_z, a2);
 
     if (x1== 1) {u_axis=axis::AXIS_X; lft_u=0;   rgt_u=max;}
     if (x1==-1) {u_axis=axis::AXIS_X; lft_u=max; rgt_u=0;}
@@ -202,11 +212,12 @@ coords Cube::get_next_coords(axis axis_1, axis axis_2, direction dir, int curren
     if (z2== 1) {v_axis=axis::AXIS_Z; top_v=0;   bot_v=max;}
     if (z2==-1) {v_axis=axis::AXIS_Z; top_v=max; bot_v=0;}
 
-    int du = (rgt_u - lft_u) / (max);
-    int dv = (bot_v - top_v) / (max);
+    int du = (rgt_u - lft_u) / (max) * modifier_u;
+    int dv = (bot_v - top_v) / (max) * modifier_v;
 
     coords curr_xyz = Index_to_XYZ(current_i, this->width);
     coords next_xyz = curr_xyz;  // keep track of original, but alter the new
+
     switch(dir) {
         case direction::up:    AddAxis(&next_xyz, -dv, v_axis); break;
         case direction::down:  AddAxis(&next_xyz,  dv, v_axis); break;
