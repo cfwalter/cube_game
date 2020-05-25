@@ -39,9 +39,12 @@ void Cube::erase_block_at(int index)
     for (int i=0; i<this->blocks.size(); ++i) {
         if (this->blocks.at(i)->get_index() == index) {
             Block * b = this->blocks.at(i);
-             for (int j=0; j<this->blocks.size(); ++j) { //remove block from all linked clusters
-                this->blocks.at(j)->remove_linked_block(b);
-             }
+            for (int i=0; i<this->blockchains.size(); ++i) {
+                if (this->blockchains.at(i)->get_other_block(b)) {
+                    this->blockchains.erase(this->blockchains.begin()+i);
+                    return;
+                }
+            }
             this->blocks.erase(this->blocks.begin() + i);
             return;
         }
@@ -150,6 +153,10 @@ void Cube::draw()
     for (int i=0; i<this->blocks.size(); ++i) {
         block = this->blocks.at(i);
         block->draw();
+    }
+
+    for (int i=0; i<this->blockchains.size(); ++i) {
+        this->blockchains.at(i)->draw();
     }
 }
 

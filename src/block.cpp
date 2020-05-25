@@ -74,12 +74,6 @@ void Block::draw()
     SDL_Rect r = {int(u-wz*0.5), int(v-hz*0.5), int(wz), int(hz)};
     SDL_RenderCopy(this->rend, img, NULL, &r);
     vertex lv;
-    for (int i=0; i<this->linked_blocks.size(); ++i) {
-        lv = linked_blocks.at(i)->get_current_vertex();
-        if (lv.z > 0) {
-            SDL_RenderDrawLine(this->rend, u, v, FOV*lv.x/lv.z+CENTER_X, FOV*lv.y/lv.z+CENTER_Y);
-        }
-    }
 }
 
 
@@ -115,9 +109,35 @@ bool Block::move(direction dir)
     this->move_frame = 1;
 
     // 3. attempt to move linked blocks
-    for (int i=0; i<this->linked_blocks.size(); ++i) {
-        this->linked_blocks.at(i)->move(dir);
+    // TODO: change to blockchains
+    Block* other_b;
+    for (int i=0; i<this->cube->get_blockchains().size(); ++i) {
+        other_b = this->cube->get_blockchains().at(i)->get_other_block(this);
+        if (other_b) other_b->move(dir);
     }
 
     return true;
+}
+
+
+void Block::toggle_linked_block(Block* b) {
+
+    for (int i=0; i<this->cube->get_blockchains().size(); ++i) {
+        if (this->cube->get_blockchains().at(i)->get_other_block(this) == b) {
+            this->cube->get_blockchains().erase(this->cube->get_blockchains().begin()+i);
+            return;
+        }
+    }
+    this->cube->add_blockchain(new BlockChain(this, b, this->rend));
+};
+
+
+void BlockChain::draw()
+{
+    vertex a_vert = this->block_a->get_current_vertex();
+    vertex b_vert = this->block_b->get_current_vertex();
+    if (a_vert.z <=0 || b_vert.z <=0) return;
+    int a_u = FOV*a_vert.x/a_vert.z+CENTER_X;  int a_v = FOV*a_vert.y/a_vert.z+CENTER_Y;
+    int b_u = FOV*b_vert.x/b_vert.z+CENTER_X;  int b_v = FOV*b_vert.y/b_vert.z+CENTER_Y;
+    SDL_RenderDrawLine(this->rend, a_u, a_v, b_u, b_v);
 }

@@ -59,7 +59,6 @@ public:
         if (!new_block) return;
         if (!this->selected_block) {this->selected_block = new_block; return;}
         if (new_block == this->selected_block) {this->selected_block = NULL; return;}
-        new_block->toggle_linked_block(this->selected_block);
         this->selected_block->toggle_linked_block(new_block);
         this->selected_block = NULL;
     };

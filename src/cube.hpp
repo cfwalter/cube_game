@@ -16,6 +16,7 @@ private:
     SDL_Renderer * rend;
     std::vector <Tile*> tiles;
     std::vector <Block*> blocks;
+    std::vector <BlockChain*> blockchains;
 public:
     inline Cube(SDL_Renderer * r, vertex o, int w, angles h, angles th)
     {
@@ -42,6 +43,8 @@ public:
         return (!(int(heading.psi)%90) && !(int(heading.theta)%90) && !(int(heading.phi)%90));
     };
     inline std::vector <Tile*> get_tiles() {return tiles;};
+    inline std::vector <BlockChain*> get_blockchains() {return blockchains;};
+    inline void add_blockchain(BlockChain* bc) {blockchains.push_back(bc);};
     inline bool get_edit_mode() {return edit_mode;};
     inline void toggle_edit_mode() {edit_mode = !edit_mode;};
     void rotate(direction dir);
