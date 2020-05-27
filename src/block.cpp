@@ -73,7 +73,6 @@ void Block::draw()
     double hz = h/current_vert.z;
     SDL_Rect r = {int(u-wz*0.5), int(v-hz*0.5), int(wz), int(hz)};
     SDL_RenderCopy(this->rend, img, NULL, &r);
-    vertex lv;
 }
 
 
@@ -82,7 +81,9 @@ bool Block::move(direction dir)
     if (this->moved_already) {
         return true;
     }
-    this->moved_already = true;  // already_moved is reset after each frame, ensure that it won't be moved more than once
+    this->moved_already = true;
+    // already_moved is reset after each frame,
+    // ensure that it won't be moved more than once per turn
 
     relative_face rf = this->get_current_face();
     coords next_xyz = this->cube->get_next_coords(rf, dir, this->index);
@@ -137,7 +138,20 @@ void BlockChain::draw()
     vertex a_vert = this->block_a->get_current_vertex();
     vertex b_vert = this->block_b->get_current_vertex();
     if (a_vert.z <=0 || b_vert.z <=0) return;
-    int a_u = FOV*a_vert.x/a_vert.z+CENTER_X;  int a_v = FOV*a_vert.y/a_vert.z+CENTER_Y;
-    int b_u = FOV*b_vert.x/b_vert.z+CENTER_X;  int b_v = FOV*b_vert.y/b_vert.z+CENTER_Y;
-    SDL_RenderDrawLine(this->rend, a_u, a_v, b_u, b_v);
+    const double dd = 0.04;
+    const double dx = b_vert.x - a_vert.x;
+    const double dy = b_vert.y - a_vert.y;
+    const double dz = b_vert.z - a_vert.z;
+    const double mag = sqrt(pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
+    const double norm_x = dx / mag;
+    const double norm_y = dy / mag;
+    const double norm_z = dz / mag;
+    const int n = mag / dd;
+    SDL_Point points[n];
+    for (int i=0; i<n; ++i) {
+        int u = FOV * ((a_vert.x + norm_x * dd * i) / (a_vert.z + norm_z * dd * i)) + CENTER_X;
+        int v = FOV * ((a_vert.y + norm_y * dd * i) / (a_vert.z + norm_z * dd * i)) + CENTER_Y;
+        points[i] = {u, v};
+    }
+    SDL_RenderDrawPoints(this->rend, points, n);
 }
