@@ -115,7 +115,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             rotate_cube = direction::null;
         }
 
-        play_cube.update();
+        play_cube.update(select.get_held_block());
         select.update();
 
         // clear the window

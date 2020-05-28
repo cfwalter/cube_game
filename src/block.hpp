@@ -66,28 +66,21 @@ private:
     Block* block_b;
     Cube* cube;
     SDL_Renderer * rend;
-    double offset;
+    int offset_n;
+    static const int max_offset_n = 15;
 public:
-    BlockChain(Block* ba, Block* bb, SDL_Renderer * r) { block_a=ba; block_b=bb; offset=0; rend=r;};
-    void update() { this->offset += 0.1; };
+    BlockChain(Block* ba, Block* bb, SDL_Renderer * r) { block_a=ba; block_b=bb; offset_n=0; rend=r;};
+    inline void update(const Block* held_block)
+    {
+        if (held_block == block_a) offset_n = (offset_n + 1) % max_offset_n;
+        if (held_block == block_b) offset_n = (offset_n - 1) % max_offset_n;
+    };
     void draw();
-    // void draw() {
-    //     vertex v_a = block_a->get_current_vertex();
-    //     vertex v_b = block_b->get_current_vertex();
-    //     draw_dotted_line()
-    // };
     Block* get_other_block(Block* b) {
         if (b == block_a) return block_b;
         if (b == block_b) return block_a;
         return NULL;
     }
-    // void draw_dotted_line(vertex v_a, vertex v_b, double offset) {
-    //     if (v_a.z<0 || v_b.z<0) return;
-    //     double dx = pow(v_b.x - v_a.x, 2);
-    //     double dy = pow(v_b.y - v_a.y, 2);
-    //     double dz = pow(v_b.z - v_a.z, 2);
-    //     double distance = sqrt(dx + dy + dz);
-    // }
 };
 
 #endif

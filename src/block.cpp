@@ -146,11 +146,15 @@ void BlockChain::draw()
     const double norm_x = dx / mag;
     const double norm_y = dy / mag;
     const double norm_z = dz / mag;
+    const double osx = norm_x * dd * double(this->offset_n) / max_offset_n;
+    const double osy = norm_y * dd * double(this->offset_n) / max_offset_n;
+    const double osz = norm_z * dd * double(this->offset_n) / max_offset_n;
     const int n = mag / dd;
     SDL_Point points[n];
     for (int i=0; i<n; ++i) {
-        int u = FOV * ((a_vert.x + norm_x * dd * i) / (a_vert.z + norm_z * dd * i)) + CENTER_X;
-        int v = FOV * ((a_vert.y + norm_y * dd * i) / (a_vert.z + norm_z * dd * i)) + CENTER_Y;
+        const double z = a_vert.z + norm_z * dd * i + osz;
+        int u = FOV * (a_vert.x + norm_x * dd * i + osx) / z + CENTER_X;
+        int v = FOV * (a_vert.y + norm_y * dd * i + osy) / z + CENTER_Y;
         points[i] = {u, v};
     }
     SDL_RenderDrawPoints(this->rend, points, n);

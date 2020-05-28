@@ -33,6 +33,7 @@ public :
         if(!this->is_holding()) grab_block();
         else this->held_block = NULL;
     }
+    inline const Block* get_held_block() { return this->held_block; };
     direction move(direction dir);
 
     void update();

@@ -48,7 +48,7 @@ public:
     inline bool get_edit_mode() {return edit_mode;};
     inline void toggle_edit_mode() {edit_mode = !edit_mode;};
     void rotate(direction dir);
-    void update();
+    void update(const Block* held_block);
     vertex coords_to_vertex(coords xyz);
     vertex index_to_vertex(int index);
     void edit_tile(TILE_TYPE type, int index);

@@ -114,7 +114,7 @@ void Cube::rotate(direction dir)
     }
 }
 
-void Cube::update()
+void Cube::update(const Block* held_block)
 {
     // TODO: make this pythonic idk
     if (heading.psi   < target_heading.psi)   heading.psi   += D_ANGLE;
@@ -127,6 +127,9 @@ void Cube::update()
     for (int i=0; i<this->blocks.size(); ++i) {
         this->blocks.at(i)->update();
         this->blocks.at(i)->reset_moved_already();
+    }
+    for (int i=0; i<this->blockchains.size(); ++i) {
+        this->blockchains.at(i)->update(held_block);
     }
 }
 
