@@ -23,7 +23,7 @@ public:
         origin=o; width=w; heading=h; target_heading=th; rend=r;
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
-            tiles.push_back(new OpenTile(i,r));
+            tiles.push_back(new OpenTile(i,this,r));
         }
     };
     inline vertex get_origin() {return origin;};
@@ -58,6 +58,7 @@ public:
     void toggle_block(int index);
     void erase_block_at(int index);
     coords get_next_coords(relative_face rf, direction dir, int current_i);
+    bool is_win();
     void draw();
 };
 

@@ -38,6 +38,12 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     SDL_Rect edit_msg_rect = {20, 20, edit_msg_surface->w, edit_msg_surface->h};
     SDL_FreeSurface(edit_msg_surface);
 
+    SDL_Surface* win_msg_surface = TTF_RenderText_Solid(font, "WIN!", {255, 255, 255});
+    SDL_Texture* win_msg_texture = SDL_CreateTextureFromSurface(rend, win_msg_surface);
+    SDL_Rect win_msg_rect = {WINDOW_WIDTH/2 - win_msg_surface->w/2, 20,
+        win_msg_surface->w, win_msg_surface->h};
+    SDL_FreeSurface(win_msg_surface);
+
     for(std::map<int,bool> keys; !(quit_state || pause_state); ) {
         // process events
         SDL_Event ev;
@@ -83,8 +89,12 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
                 keys[SDLK_4]=false;
             }
             if (keys[SDLK_5]) {
-                play_cube.edit_tile(TILE_TYPE::TT_EMPTY_TILE, select.get_index());
+                play_cube.edit_tile(TILE_TYPE::TT_FINISH_TILE, select.get_index());
                 keys[SDLK_5]=false;
+            }
+            if (keys[SDLK_0]) {
+                play_cube.edit_tile(TILE_TYPE::TT_EMPTY_TILE, select.get_index());
+                keys[SDLK_0]=false;
             }
             if (keys[SDLK_b]) {
                 play_cube.toggle_block(select.get_index());
@@ -127,6 +137,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         editor.draw();
         if (play_cube.get_edit_mode()) {
             SDL_RenderCopy(rend, edit_msg_texture, NULL, &edit_msg_rect);
+        }
+
+        if (play_cube.is_win()) {
+            SDL_RenderCopy(rend, win_msg_texture, NULL, &win_msg_rect);
         }
 
         // debugging output

@@ -55,11 +55,12 @@ void Cube::edit_tile(TILE_TYPE type, int index)
 {
     Tile* tile;
     switch(type) {
-        case TT_OPEN_TILE: tile = new OpenTile(index, this->rend); break;
-        case TT_WALL_TILE: tile = new WallTile(index, this->rend); break;
-        case TT_POINTER_ONLY_TILE: tile = new PointerOnlyTile(index, this->rend); break;
-        case TT_BLOCK_ONLY_TILE: tile = new BlockOnlyTile(index, this->rend); break;
-        case TT_EMPTY_TILE: tile = new EmptyTile(index, this->rend); break;
+        case TT_OPEN_TILE: tile = new OpenTile(index, this, this->rend); break;
+        case TT_WALL_TILE: tile = new WallTile(index, this, this->rend); break;
+        case TT_POINTER_ONLY_TILE: tile = new PointerOnlyTile(index, this, this->rend); break;
+        case TT_BLOCK_ONLY_TILE: tile = new BlockOnlyTile(index, this, this->rend); break;
+        case TT_FINISH_TILE: tile = new FinishTile(index, this, this->rend); break;
+        case TT_EMPTY_TILE: tile = new EmptyTile(index, this, this->rend); break;
         default: return;
     }
     this->erase_tile_at(index);
@@ -161,6 +162,14 @@ void Cube::draw()
     for (int i=0; i<this->blockchains.size(); ++i) {
         this->blockchains.at(i)->draw();
     }
+}
+
+bool Cube::is_win()
+{
+    for (int i=0; i<this->tiles.size(); ++i) {
+        if (!this->tiles.at(i)->is_win()) return false;
+    }
+    return true;
 }
 
 vertex Cube::coords_to_vertex(coords xyz)

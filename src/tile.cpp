@@ -1,4 +1,5 @@
 #include "tile.hpp"
+#include "cube.hpp"
 
 void Tile::draw(double x, double y, double z)
 {
@@ -12,8 +13,15 @@ void Tile::draw(double x, double y, double z)
     SDL_RenderCopy(this->rend, img_texture, NULL, &r);
 }
 
+bool FinishTile::is_win()
+{
+    if (this->cube->get_block_at(this->index)) return true;
+    return false;
+};
+
 SDL_Surface* Tile::img_surface = IMG_Load("../Resources/none.png");
 SDL_Surface* OpenTile::img_surface = IMG_Load("../Resources/open_tile.png");
 SDL_Surface* WallTile::img_surface = IMG_Load("../Resources/wall_tile.png");
 SDL_Surface* PointerOnlyTile::img_surface = IMG_Load("../Resources/pointer_only_tile.png");
 SDL_Surface* BlockOnlyTile::img_surface = IMG_Load("../Resources/block_only_tile.png");
+SDL_Surface* FinishTile::img_surface = IMG_Load("../Resources/finish_tile.png");

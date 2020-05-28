@@ -4,7 +4,6 @@
 #include "common.hpp"
 
 class Cube;
-class BlockChain;
 
 class Block {
 protected:
