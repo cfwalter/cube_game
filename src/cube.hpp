@@ -6,6 +6,8 @@
 #include "quat.hpp"
 #include "common.hpp"
 
+class Selector;
+
 class Cube {
 private:
     vertex origin;
@@ -43,7 +45,7 @@ public:
         return (!(int(heading.psi)%90) && !(int(heading.theta)%90) && !(int(heading.phi)%90));
     };
     inline std::vector <Tile*> get_tiles() {return tiles;};
-    inline std::vector <BlockChain*> get_blockchains() {return blockchains;};
+    inline std::vector <BlockChain*> * get_blockchains() {return &blockchains;};
     inline void add_blockchain(BlockChain* bc) {blockchains.push_back(bc);};
     inline bool get_edit_mode() {return edit_mode;};
     inline void toggle_edit_mode() {edit_mode = !edit_mode;};
@@ -58,6 +60,7 @@ public:
     void toggle_block(int index);
     void erase_block_at(int index);
     void save_to_disk(int home_ind);
+    void load_from_disk(Selector* select);
     coords get_next_coords(relative_face rf, direction dir, int current_i);
     bool is_win();
     void draw();

@@ -1,33 +1,109 @@
 #include "cube.hpp"
+#include "selector.hpp"
 #include <chrono>
 #include <ctime>
 #include <fstream>
 #include <sstream>
+#include <string>
 
+/* Cube file format:
+width
+selector-index phi theta psi
+tile0.index tile0.type tile1.index tile1.type ...
+block0.index block0.face block1.index block1.face...
+blockchain0.a.index blockchain0.b.index
+blockchain1.a.index blockchain1.b.index
+.
+.
+.
+*/
 
 void Cube::save_to_disk(int home_ind)
 {
-    std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    char file_name[43];
-    std::strftime(file_name, sizeof(file_name), "%F_%T.txt", std::localtime(&t));
+    // std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    // char file_name[43];
+    // std::strftime(file_name, sizeof(file_name), "%F_%T.txt", std::localtime(&t));
+    printf("saving...\n");
     std::ofstream ofile;
-    ofile.open(file_name, std::fstream::out);
+    ofile.open("out.txt", std::fstream::out);
+    // width
     ofile << this->width << std::endl;
+    // home & heading
     ofile << home_ind << ' ' <<  this->heading.phi << ' ' << this->heading.theta << ' ' << this->heading.psi << ' ' << std::endl;
+    // tiles
     for (int i=0; i<this->tiles.size(); ++i) {
-        ofile << this->tiles.at(i)->type << ' ';
+        ofile << this->tiles.at(i)->get_index() << ' ' << this->tiles.at(i)->get_type() << ' ';
     }
     ofile << std::endl;
+    // blocks
     for (int i=0; i<this->blocks.size(); ++i) {
-        ofile << this->blocks.at(i)->get_index() << ' ';
+        ofile << this->blocks.at(i)->get_index() << ' ' << this->blocks.at(i)->get_face() << ' ';
     }
     ofile << std::endl;
+    // blockchains
     for (int i=0; i<this->blockchains.size(); ++i) {
         ofile << this->blockchains.at(i)->get_block_a()->get_index() << ' ';
         ofile << this->blockchains.at(i)->get_block_b()->get_index() << std::endl;
     }
     ofile.close();
+    printf("done.\n\n");
 };
+
+void Cube::load_from_disk(Selector * select)
+{
+    std::ifstream ifile("out.txt");
+    std::string line;
+    int temp_type, temp_index;
+
+    // width
+    std::getline(ifile, line);
+    this->width = std::stoi(line, NULL);
+
+    // home & heading
+    std::getline(ifile, line);
+    std::istringstream iss(line);
+    iss >> temp_index >> this->heading.phi >> this->heading.theta >> this->heading.psi;
+    this->target_heading = this->heading;
+    select->set_index(temp_index);
+
+    // tiles
+    std::getline(ifile, line);
+    iss.str(line);
+    this->tiles.clear();
+    while (iss >> temp_index >> temp_type) {
+        Tile* tile;
+        switch(temp_type) {
+            case TT_OPEN_TILE: tile = new OpenTile(temp_index, this, this->rend); break;
+            case TT_WALL_TILE: tile = new WallTile(temp_index, this, this->rend); break;
+            case TT_POINTER_ONLY_TILE: tile = new PointerOnlyTile(temp_index, this, this->rend); break;
+            case TT_BLOCK_ONLY_TILE: tile = new BlockOnlyTile(temp_index, this, this->rend); break;
+            case TT_FINISH_TILE: tile = new FinishTile(temp_index, this, this->rend); break;
+            case TT_EMPTY_TILE: tile = new EmptyTile(temp_index, this, this->rend); break;
+            default: return;
+        }
+        this->tiles.push_back(tile);
+    }
+
+    // blocks
+    std::getline(ifile, line);
+    iss.str(line);
+    iss.clear();
+    this->blocks.clear();
+    while (iss >> temp_index >> temp_type) {
+        this->blocks.push_back(new Block(temp_index, CUBE_FACE(temp_type), this, this->rend));
+    }
+
+    // blockchains
+    this->blockchains.clear();
+    while(std::getline(ifile, line)) {
+        iss.str(line);
+        iss.clear();
+        iss >> temp_index; Block* block_a = this->get_block_at(temp_index);
+        iss >> temp_index; Block* block_b = this->get_block_at(temp_index);
+        block_a->toggle_linked_block(block_b);
+    }
+    ifile.close();
+}
 
 
 Tile* Cube::get_tile_at(int index)

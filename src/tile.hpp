@@ -13,8 +13,8 @@ protected:
     Cube* cube;
     static const int h = 18;
     static const int w = 18;
-public:
     static const TILE_TYPE type = TILE_TYPE::TT_OPEN_TILE;
+public:
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     void draw(double x, double y, double z);
@@ -28,6 +28,7 @@ public:
     inline virtual bool is_walkable(int type) {return true;};
     inline virtual void on_exit() {};
     inline virtual bool is_win() {return true;};
+    inline virtual TILE_TYPE get_type() { return this->type; };
 };
 
 
@@ -41,6 +42,7 @@ public:
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
     inline bool is_walkable(int type) override {return true;};
+    inline virtual TILE_TYPE get_type() override { return this->type; };
 };
 
 
@@ -54,6 +56,7 @@ public:
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
     inline bool is_walkable(int type) override {return false;};
+    inline virtual TILE_TYPE get_type() override { return this->type; };
 };
 
 
@@ -67,6 +70,7 @@ public:
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
     inline bool is_walkable(int type) override {return type == GAMEPLAY_OBJ_TYPE::GOT_SELECTOR;};
+    inline virtual TILE_TYPE get_type() override { return this->type; };
 };
 
 
@@ -80,6 +84,7 @@ public:
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
     inline bool is_walkable(int type) override {return type == GAMEPLAY_OBJ_TYPE::GOT_BLOCK;};
+    inline virtual TILE_TYPE get_type() override { return this->type; };
 };
 
 
@@ -91,6 +96,7 @@ public:
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
     inline bool is_walkable(int type) override {return false;};
+    inline virtual TILE_TYPE get_type() override { return this->type; };
 };
 
 class FinishTile : public Tile {
@@ -103,6 +109,7 @@ public:
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
     };
     inline bool is_walkable(int type) override {return true;};
+    inline virtual TILE_TYPE get_type() override { return this->type; };
     virtual bool is_win() override;
 };
 

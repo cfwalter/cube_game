@@ -52,6 +52,7 @@ public:
     void toggle_linked_block(Block* b);
     vertex get_current_vertex();
     void set_face(CUBE_FACE f) {this->face = f;}
+    CUBE_FACE get_face() {return this->face;}
     relative_face get_current_face();
     bool move(direction dir);
     void update();

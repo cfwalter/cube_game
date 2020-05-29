@@ -104,6 +104,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
                 play_cube.save_to_disk(select.get_index());
                 keys[SDLK_s]=false;
             }
+            if (keys[SDLK_l]) {
+                play_cube.load_from_disk(&select);
+                keys[SDLK_l]=false;
+            }
         }
 
         if (play_cube.is_heading_square() && dir_key_pressed) {

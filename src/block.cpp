@@ -79,7 +79,7 @@ void Block::draw()
 bool Block::move(direction dir)
 {
     if (this->moved_already) {
-        return true;
+        return false;
     }
     this->moved_already = true;
     // already_moved is reset after each frame,
@@ -112,8 +112,8 @@ bool Block::move(direction dir)
     // 3. attempt to move linked blocks
     // TODO: change to blockchains
     Block* other_b;
-    for (int i=0; i<this->cube->get_blockchains().size(); ++i) {
-        other_b = this->cube->get_blockchains().at(i)->get_other_block(this);
+    for (int i=0; i<this->cube->get_blockchains()->size(); ++i) {
+        other_b = this->cube->get_blockchains()->at(i)->get_other_block(this);
         if (other_b) other_b->move(dir);
     }
 
@@ -123,9 +123,9 @@ bool Block::move(direction dir)
 
 void Block::toggle_linked_block(Block* b) {
 
-    for (int i=0; i<this->cube->get_blockchains().size(); ++i) {
-        if (this->cube->get_blockchains().at(i)->get_other_block(this) == b) {
-            this->cube->get_blockchains().erase(this->cube->get_blockchains().begin()+i);
+    for (int i=0; i<this->cube->get_blockchains()->size(); ++i) {
+        if (this->cube->get_blockchains()->at(i)->get_other_block(this) == b) {
+            this->cube->get_blockchains()->erase(this->cube->get_blockchains()->begin()+i);
             return;
         }
     }
