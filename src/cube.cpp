@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <filesystem>
 
 /* Cube file format:
 width
@@ -49,9 +50,17 @@ void Cube::save_to_disk(int home_ind)
     printf("done.\n\n");
 };
 
-void Cube::load_from_disk(Selector * select)
+void Cube::load_from_disk(int lvl, Selector * select)
 {
-    std::ifstream ifile("out.txt");
+    int i=0;
+    std::string file_name;
+    for(auto& p: std::filesystem::directory_iterator("../Resources/levels")) {
+        if (lvl==std::stoi(std::string(p.path().filename()).substr(0,2))) {
+            file_name = p.path();
+        }
+    }
+    if (!file_name.length()) return;
+    std::ifstream ifile(file_name);
     std::string line;
     int temp_type, temp_index;
 
