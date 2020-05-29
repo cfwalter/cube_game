@@ -57,6 +57,7 @@ public:
     void erase_tile_at(int index);
     void toggle_block(int index);
     void erase_block_at(int index);
+    void save_to_disk(int home_ind);
     coords get_next_coords(relative_face rf, direction dir, int current_i);
     bool is_win();
     void draw();

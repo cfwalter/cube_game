@@ -1,4 +1,34 @@
 #include "cube.hpp"
+#include <chrono>
+#include <ctime>
+#include <fstream>
+#include <sstream>
+
+
+void Cube::save_to_disk(int home_ind)
+{
+    std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    char file_name[43];
+    std::strftime(file_name, sizeof(file_name), "%F_%T.txt", std::localtime(&t));
+    std::ofstream ofile;
+    ofile.open(file_name, std::fstream::out);
+    ofile << this->width << std::endl;
+    ofile << home_ind << ' ' <<  this->heading.phi << ' ' << this->heading.theta << ' ' << this->heading.psi << ' ' << std::endl;
+    for (int i=0; i<this->tiles.size(); ++i) {
+        ofile << this->tiles.at(i)->type << ' ';
+    }
+    ofile << std::endl;
+    for (int i=0; i<this->blocks.size(); ++i) {
+        ofile << this->blocks.at(i)->get_index() << ' ';
+    }
+    ofile << std::endl;
+    for (int i=0; i<this->blockchains.size(); ++i) {
+        ofile << this->blockchains.at(i)->get_block_a()->get_index() << ' ';
+        ofile << this->blockchains.at(i)->get_block_b()->get_index() << std::endl;
+    }
+    ofile.close();
+};
+
 
 Tile* Cube::get_tile_at(int index)
 {

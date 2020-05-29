@@ -14,6 +14,7 @@ protected:
     static const int h = 18;
     static const int w = 18;
 public:
+    static const TILE_TYPE type = TILE_TYPE::TT_OPEN_TILE;
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     void draw(double x, double y, double z);
@@ -34,6 +35,7 @@ class OpenTile : public Tile {
 protected:
     static SDL_Surface* img_surface;
 public:
+    static const TILE_TYPE type = TILE_TYPE::TT_OPEN_TILE;
     OpenTile(int i, Cube* c, SDL_Renderer * r) : Tile(i, c, r)
     {
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
@@ -46,6 +48,7 @@ class WallTile : public Tile {
 protected:
     static SDL_Surface* img_surface;
 public:
+    static const TILE_TYPE type = TILE_TYPE::TT_WALL_TILE;
     WallTile(int i, Cube* c, SDL_Renderer * r) : Tile(i, c, r)
     {
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
@@ -58,6 +61,7 @@ class PointerOnlyTile : public Tile {
 protected:
     static SDL_Surface* img_surface;
 public:
+    static const TILE_TYPE type = TILE_TYPE::TT_POINTER_ONLY_TILE;
     PointerOnlyTile(int i, Cube* c, SDL_Renderer * r) : Tile(i, c, r)
     {
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
@@ -70,6 +74,7 @@ class BlockOnlyTile : public Tile {
 protected:
     static SDL_Surface* img_surface;
 public:
+    static const TILE_TYPE type = TILE_TYPE::TT_BLOCK_ONLY_TILE;
     BlockOnlyTile(int i, Cube* c, SDL_Renderer * r) : Tile(i, c, r)
     {
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
@@ -80,6 +85,7 @@ public:
 
 class EmptyTile : public Tile {
 public:
+    static const TILE_TYPE type = TILE_TYPE::TT_EMPTY_TILE;
     EmptyTile(int i, Cube* c, SDL_Renderer * r) : Tile(i, c, r)
     {
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);
@@ -91,6 +97,7 @@ class FinishTile : public Tile {
 protected:
     static SDL_Surface* img_surface;
 public:
+    static const TILE_TYPE type = TILE_TYPE::TT_FINISH_TILE;
     FinishTile(int i, Cube* c, SDL_Renderer * r) : Tile(i, c, r)
     {
         img_texture = SDL_CreateTextureFromSurface(rend, img_surface);

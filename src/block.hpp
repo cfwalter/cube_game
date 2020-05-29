@@ -80,6 +80,8 @@ public:
         if (b == block_b) return block_a;
         return NULL;
     }
+    inline Block* get_block_a() {return block_a;};
+    inline Block* get_block_b() {return block_b;};
 };
 
 #endif

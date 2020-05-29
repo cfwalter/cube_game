@@ -59,10 +59,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         // process input
         pause_state = keys[SDLK_p];
         quit_state = keys[SDLK_ESCAPE] || quit_state;
-        bool up__key = keys[SDLK_w] || keys[SDLK_UP];
-        bool rgt_key = keys[SDLK_a] || keys[SDLK_RIGHT];
-        bool dwn_key = keys[SDLK_s] || keys[SDLK_DOWN];
-        bool lft_key = keys[SDLK_d] || keys[SDLK_LEFT];
+        bool up__key = keys[SDLK_UP];
+        bool rgt_key = keys[SDLK_RIGHT];
+        bool dwn_key = keys[SDLK_DOWN];
+        bool lft_key = keys[SDLK_LEFT];
         bool dir_key_pressed = (up__key || rgt_key || dwn_key || lft_key);
 
         if (keys[SDLK_e]) {
@@ -99,6 +99,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             if (keys[SDLK_b]) {
                 play_cube.toggle_block(select.get_index());
                 keys[SDLK_b]=false;
+            }
+            if (keys[SDLK_s]) {
+                play_cube.save_to_disk(select.get_index());
+                keys[SDLK_s]=false;
             }
         }
 
