@@ -1,8 +1,8 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-#define WINDOW_WIDTH (640)
-#define WINDOW_HEIGHT (480)
+#define WINDOW_WIDTH (960)
+#define WINDOW_HEIGHT (720)
 #define PI (3.14159)
 #define FPS (60)
 #define Z (12)  // depth from camera to render

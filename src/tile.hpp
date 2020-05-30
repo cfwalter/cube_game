@@ -28,6 +28,7 @@ public:
     inline virtual bool is_walkable(int type) {return true;};
     inline virtual void on_exit() {};
     inline virtual bool is_win() {return true;};
+    inline Cube* get_cube() {return cube;};
     inline virtual TILE_TYPE get_type() { return this->type; };
 };
 

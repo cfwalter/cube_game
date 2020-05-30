@@ -3,6 +3,7 @@
 
 void Tile::draw(double x, double y, double z)
 {
+    if (z <= 0) return;
     int u = FOV*x/z+CENTER_X;
     int v = FOV*y/z+CENTER_Y;
     // int w, h;
@@ -10,6 +11,8 @@ void Tile::draw(double x, double y, double z)
     double wz = w/z;
     double hz = h/z;
     SDL_Rect r = {int(u-wz*0.5), int(v-hz*0.5), int(wz), int(hz)};
+    if (z<1) z=1;
+    SDL_SetTextureColorMod(img_texture, 255/z, 255/z, 255/z);
     SDL_RenderCopy(this->rend, img_texture, NULL, &r);
 }
 

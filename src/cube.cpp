@@ -93,6 +93,7 @@ void Cube::load_from_disk(int lvl, Selector * select)
         }
         this->tiles.push_back(tile);
     }
+    this->sort_tiles();
 
     // blocks
     std::getline(ifile, line);
@@ -233,13 +234,16 @@ void Cube::rotate(direction dir)
 
 void Cube::update(const Block* held_block)
 {
+    bool heading_moved = false;
     // TODO: make this pythonic idk
-    if (heading.psi   < target_heading.psi)   heading.psi   += D_ANGLE;
-    if (heading.psi   > target_heading.psi)   heading.psi   -= D_ANGLE;
-    if (heading.phi   < target_heading.phi)   heading.phi   += D_ANGLE;
-    if (heading.phi   > target_heading.phi)   heading.phi   -= D_ANGLE;
-    if (heading.theta < target_heading.theta) heading.theta += D_ANGLE;
-    if (heading.theta > target_heading.theta) heading.theta -= D_ANGLE;
+    if (heading.psi   < target_heading.psi)   {heading.psi   += D_ANGLE; heading_moved=true;}
+    if (heading.psi   > target_heading.psi)   {heading.psi   -= D_ANGLE; heading_moved=true;}
+    if (heading.phi   < target_heading.phi)   {heading.phi   += D_ANGLE; heading_moved=true;}
+    if (heading.phi   > target_heading.phi)   {heading.phi   -= D_ANGLE; heading_moved=true;}
+    if (heading.theta < target_heading.theta) {heading.theta += D_ANGLE; heading_moved=true;}
+    if (heading.theta > target_heading.theta) {heading.theta -= D_ANGLE; heading_moved=true;}
+
+    if (heading_moved) this->sort_tiles();
 
     for (int i=0; i<this->blocks.size(); ++i) {
         this->blocks.at(i)->update();
@@ -248,6 +252,17 @@ void Cube::update(const Block* held_block)
     for (int i=0; i<this->blockchains.size(); ++i) {
         this->blockchains.at(i)->update(held_block);
     }
+}
+
+void Cube::sort_tiles()
+{
+    std::sort(this->tiles.begin(), this->tiles.end(),
+        [] (Tile * tile_a, Tile * tile_b) -> bool {
+            Cube * c = tile_a->get_cube();
+            double az = c->index_to_vertex(tile_a->get_index()).z;
+            double bz = c->index_to_vertex(tile_b->get_index()).z;
+            return az > bz;
+        });
 }
 
 void Cube::draw()

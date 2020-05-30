@@ -72,6 +72,8 @@ void Block::draw()
     double wz = w/current_vert.z;
     double hz = h/current_vert.z;
     SDL_Rect r = {int(u-wz*0.5), int(v-hz*0.5), int(wz), int(hz)};
+    if (current_vert.z<1) current_vert.z=1;
+    SDL_SetTextureColorMod(img, 255/current_vert.z, 255/current_vert.z, 255/current_vert.z);
     SDL_RenderCopy(this->rend, img, NULL, &r);
 }
 
@@ -151,11 +153,17 @@ void BlockChain::draw()
     const double osz = norm_z * dd * double(this->offset_n) / max_offset_n;
     const int n = mag / dd;
     SDL_Point points[n];
+    SDL_Point fade_points[n*4];
     for (int i=0; i<n; ++i) {
         const double z = a_vert.z + norm_z * dd * i + osz;
         int u = FOV * (a_vert.x + norm_x * dd * i + osx) / z + CENTER_X;
         int v = FOV * (a_vert.y + norm_y * dd * i + osy) / z + CENTER_Y;
         points[i] = {u, v};
+        fade_points[4*i+0] = {u+1, v}; fade_points[4*i+1] = {u-1, v};
+        fade_points[4*i+2] = {u, v+1}; fade_points[4*i+3] = {u, v-1};
     }
+    SDL_SetRenderDrawColor(rend, 200, 200, 200, 255);
     SDL_RenderDrawPoints(this->rend, points, n);
+    SDL_SetRenderDrawColor(rend, 200, 200, 200, 32);
+    SDL_RenderDrawPoints(this->rend, fade_points, n*4);
 }

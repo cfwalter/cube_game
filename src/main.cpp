@@ -24,7 +24,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
 {
     int current_lvl = 1;
     int old_lvl = current_lvl;
-    Cube play_cube = Cube(rend, {0, 0, 2}, 5, {0,0,0}, {0,0,0});
+    Cube play_cube = Cube(rend, {0, 0, 1.5}, 5, {0,0,0}, {0,0,0});
 
     Selector select = Selector(rend, 0, &play_cube);
     LinkedBlockEditor editor = LinkedBlockEditor(rend, &play_cube);
