@@ -22,7 +22,7 @@ bool Collision(int target_ind, std::vector<int> nest[])
 game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     std::vector<int> player_nest[], std::vector<int> target_nest[], int* current_ind)
 {
-    int current_lvl = 0;
+    int current_lvl = 1;
     int old_lvl = current_lvl;
     Cube play_cube = Cube(rend, {0, 0, 2}, 5, {0,0,0}, {0,0,0});
 
@@ -77,6 +77,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         if (keys[SDLK_e]) {
             play_cube.toggle_edit_mode();
             editor.clear_selection();
+            select.reset();
             keys[SDLK_e] = false;
         }
 
