@@ -25,6 +25,7 @@ public :
         closed_texture = SDL_CreateTextureFromSurface(rend, closed_surface);
         open_texture = SDL_CreateTextureFromSurface(rend, open_surface);
     };
+    inline void reset() { move_frame=0; held_block = NULL; }
     inline int get_index() {return index;};
     inline void set_index(int i) {index=i;};
     inline bool is_holding() {return bool(held_block);}

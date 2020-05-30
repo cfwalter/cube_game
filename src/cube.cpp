@@ -74,6 +74,7 @@ void Cube::load_from_disk(int lvl, Selector * select)
     iss >> temp_index >> this->heading.phi >> this->heading.theta >> this->heading.psi;
     this->target_heading = this->heading;
     select->set_index(temp_index);
+    select->reset();
 
     // tiles
     std::getline(ifile, line);
