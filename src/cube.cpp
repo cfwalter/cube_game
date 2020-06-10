@@ -50,26 +50,36 @@ void Cube::save_to_disk(int home_ind)
     printf("done.\n\n");
 };
 
+std::size_t readline(SDL_RWops* ifile, std::string* str)
+{
+    str->clear();
+    std::size_t result = 1;
+    char c[1];
+    result=ifile->read(ifile, c, sizeof(c), 1);
+    for (; c[0]!='\n' && result; result=ifile->read(ifile, c, sizeof(c), 1)) {
+        str->push_back(c[0]);
+    }
+    return result;
+}
+
 void Cube::load_from_disk(int lvl, Selector * select)
 {
     int i=0;
-    std::string file_name;
-    for(auto& p: std::filesystem::directory_iterator("../Resources/levels")) {
-        if (lvl==std::stoi(std::string(p.path().filename()).substr(0,2))) {
-            file_name = p.path();
-        }
-    }
-    if (!file_name.length()) return;
-    std::ifstream ifile(file_name);
+    char file_name[50];
+    sprintf(file_name, "../Resources/levels/%02d.txt", lvl);
+    SDL_RWops * ifile = SDL_RWFromFile(file_name, "r");
+
+    if (!ifile) return;
+
     std::string line;
     int temp_type, temp_index;
 
     // width
-    std::getline(ifile, line);
+    readline(ifile, &line);
     this->width = std::stoi(line, NULL);
 
     // home & heading
-    std::getline(ifile, line);
+    readline(ifile, &line);
     std::istringstream iss(line);
     iss >> temp_index >> this->heading.phi >> this->heading.theta >> this->heading.psi;
     this->target_heading = this->heading;
@@ -77,26 +87,17 @@ void Cube::load_from_disk(int lvl, Selector * select)
     select->reset();
 
     // tiles
-    std::getline(ifile, line);
+    readline(ifile, &line);
     iss.str(line);
+    iss.clear();
     this->tiles.clear();
     while (iss >> temp_index >> temp_type) {
-        Tile* tile;
-        switch(temp_type) {
-            case TT_OPEN_TILE: tile = new OpenTile(temp_index, this, this->rend); break;
-            case TT_WALL_TILE: tile = new WallTile(temp_index, this, this->rend); break;
-            case TT_POINTER_ONLY_TILE: tile = new PointerOnlyTile(temp_index, this, this->rend); break;
-            case TT_BLOCK_ONLY_TILE: tile = new BlockOnlyTile(temp_index, this, this->rend); break;
-            case TT_FINISH_TILE: tile = new FinishTile(temp_index, this, this->rend); break;
-            case TT_EMPTY_TILE: tile = new EmptyTile(temp_index, this, this->rend); break;
-            default: return;
-        }
-        this->tiles.push_back(tile);
+        this->add_tile(TILE_TYPE(temp_type), temp_index);
     }
     this->sort_tiles();
 
     // blocks
-    std::getline(ifile, line);
+    readline(ifile, &line);
     iss.str(line);
     iss.clear();
     this->blocks.clear();
@@ -106,14 +107,14 @@ void Cube::load_from_disk(int lvl, Selector * select)
 
     // blockchains
     this->blockchains.clear();
-    while(std::getline(ifile, line)) {
+    while(readline(ifile, &line)) {
         iss.str(line);
         iss.clear();
         iss >> temp_index; Block* block_a = this->get_block_at(temp_index);
         iss >> temp_index; Block* block_b = this->get_block_at(temp_index);
         block_a->toggle_linked_block(block_b);
     }
-    ifile.close();
+    ifile->close(ifile);
 }
 
 
@@ -170,6 +171,12 @@ void Cube::erase_block_at(int index)
 
 void Cube::edit_tile(TILE_TYPE type, int index)
 {
+    this->erase_tile_at(index);
+    this->add_tile(type, index);
+}
+
+void Cube::add_tile(TILE_TYPE type, int index)
+{
     Tile* tile;
     switch(type) {
         case TT_OPEN_TILE: tile = new OpenTile(index, this, this->rend); break;
@@ -180,7 +187,6 @@ void Cube::edit_tile(TILE_TYPE type, int index)
         case TT_EMPTY_TILE: tile = new EmptyTile(index, this, this->rend); break;
         default: return;
     }
-    this->erase_tile_at(index);
     this->tiles.push_back(tile);
 }
 

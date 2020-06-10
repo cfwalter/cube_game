@@ -54,6 +54,7 @@ public:
     vertex coords_to_vertex(coords xyz);
     vertex index_to_vertex(int index);
     void edit_tile(TILE_TYPE type, int index);
+    void add_tile(TILE_TYPE type, int index);
     Tile* get_tile_at(int index);
     Block* get_block_at(int index);
     void erase_tile_at(int index);

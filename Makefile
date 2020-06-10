@@ -1,5 +1,5 @@
 SDLFLAGS = $(shell sdl2-config --libs --cflags)
-COMPILER_FLAGS= -F/Library/Frameworks -framework SDL2 -framework SDL2_image -framework SDL2_ttf -framework SDL2_mixer -D_THREAD_SAFE -std=c++17
+COMPILER_FLAGS= -F/Library/Frameworks -framework SDL2 -framework SDL2_image -framework SDL2_ttf -framework SDL2_mixer -framework CoreFoundation -D_THREAD_SAFE -std=c++17
 PROGRAM=Cube
 OUTPUTPATH=build/Release
 BUNDLE=$(OUTPUTPATH)/$(PROGRAM).app
