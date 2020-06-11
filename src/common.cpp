@@ -35,7 +35,16 @@ int XYZ_to_index(coords xyz, int width)
     return xyz.z*width*width + xyz.y*width + xyz.x;
 }
 
-vertex Rotate(vertex v, angles a) {
+vertex project_point(vertex xyz)
+{
+    if (xyz.z <= 0) return {-1, -1, -1};
+    double u = FOV*xyz.x/xyz.z+CENTER_X;
+    double v = FOV*xyz.y/xyz.z+CENTER_Y;
+    return {u, v, 0};
+}
+
+vertex Rotate(vertex v, angles a)
+{
     // todo: combine these into one Quat
     Quat z_q = {cos(a.psi*0.5), 0, 0, sin(a.psi*0.5)}; // unit vector at z=1
     Quat inv_z_q = {z_q.r, -z_q.i, -z_q.j, -z_q.k};

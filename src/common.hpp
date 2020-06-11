@@ -89,6 +89,8 @@ coords Index_to_XYZ(int index, int width);
 
 int XYZ_to_index(coords xyz, int width);
 
+vertex project_point(vertex xyz);
+
 vertex Rotate(vertex v, angles a);
 
 #endif

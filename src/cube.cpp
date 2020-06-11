@@ -271,8 +271,50 @@ void Cube::sort_tiles()
         });
 }
 
+bool Cube::index_is_edge(int index)
+{
+    coords xyz = Index_to_XYZ(index, this->width);
+    bool x_face = xyz.x == 0 || xyz.x == this->width-1;
+    bool y_face = xyz.y == 0 || xyz.y == this->width-1;
+    bool z_face = xyz.z == 0 || xyz.z == this->width-1;
+    return (x_face ? 1 : 0) + (y_face ? 1 : 0) + (z_face ? 1 : 0) >= 2;
+}
+
 void Cube::draw()
 {
+
+    // draw grid
+    SDL_SetRenderDrawColor(rend, 46, 23, 60, 255);
+    int w1 = this->width;
+    int w2 = pow(w1,2);
+    int w3 = pow(w1,3);
+    for (int i=0; i<w3; ++i) {
+        coords xyz = Index_to_XYZ(i, w1);
+        if (index_is_edge(i)) {
+            if (xyz.x == 0) {
+                vertex start = project_point(coords_to_vertex(Index_to_XYZ(i, w1)));
+                vertex end   = project_point(coords_to_vertex(Index_to_XYZ(i+w1-1, w1)));
+                if (start.z == 0 && end.z == 0) {
+                    SDL_RenderDrawLine(this->rend, start.x, start.y, end.x, end.y);
+                }
+            }
+            if (xyz.y == 0) {
+                vertex start = project_point(coords_to_vertex(Index_to_XYZ(i, w1)));
+                vertex end   = project_point(coords_to_vertex(Index_to_XYZ(i+w2-w1, w1)));
+                if (start.z == 0 && end.z == 0) {
+                    SDL_RenderDrawLine(this->rend, start.x, start.y, end.x, end.y);
+                }
+            }
+            if (xyz.z == 0) {
+                vertex start = project_point(coords_to_vertex(Index_to_XYZ(i, w1)));
+                vertex end   = project_point(coords_to_vertex(Index_to_XYZ(i+w3-w2, w1)));
+                if (start.z == 0 && end.z == 0) {
+                    SDL_RenderDrawLine(this->rend, start.x, start.y, end.x, end.y);
+                }
+            }
+        }
+    }
+
     int index;
     Tile* tile;
     for (int i=0; i<this->tiles.size(); ++i) {

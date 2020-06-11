@@ -64,6 +64,7 @@ public:
     void load_from_disk(int lvl, Selector* select);
     void sort_tiles();
     coords get_next_coords(relative_face rf, direction dir, int current_i);
+    bool index_is_edge(int index);
     bool is_win();
     void draw();
 };
