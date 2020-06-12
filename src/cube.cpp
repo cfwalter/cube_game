@@ -62,11 +62,11 @@ std::size_t readline(SDL_RWops* ifile, std::string* str)
     return result;
 }
 
-void Cube::load_from_disk(int lvl, Selector * select)
+void Cube::load_from_disk(Selector * select)
 {
     int i=0;
     char file_name[50];
-    sprintf(file_name, "../Resources/levels/%02d.txt", lvl);
+    sprintf(file_name, "../Resources/levels/%02d.txt", this->level);
     SDL_RWops * ifile = SDL_RWFromFile(file_name, "r");
 
     if (!ifile) return;
@@ -81,8 +81,8 @@ void Cube::load_from_disk(int lvl, Selector * select)
     // home & heading
     readline(ifile, &line);
     std::istringstream iss(line);
-    iss >> temp_index >> this->heading.phi >> this->heading.theta >> this->heading.psi;
-    this->target_heading = this->heading;
+    iss >> temp_index >> this->target_heading.phi >> this->target_heading.theta >> this->target_heading.psi;
+    this->heading = {this->target_heading.phi + 180, this->target_heading.theta + 180, this->target_heading.psi + 180};
     select->set_index(temp_index);
     select->reset();
 
@@ -238,25 +238,49 @@ void Cube::rotate(direction dir)
     }
 }
 
-void Cube::update(const Block* held_block)
+bool Cube::update_rotation(int d_angle)
 {
     bool heading_moved = false;
     // TODO: make this pythonic idk
-    if (heading.psi   < target_heading.psi)   {heading.psi   += D_ANGLE; heading_moved=true;}
-    if (heading.psi   > target_heading.psi)   {heading.psi   -= D_ANGLE; heading_moved=true;}
-    if (heading.phi   < target_heading.phi)   {heading.phi   += D_ANGLE; heading_moved=true;}
-    if (heading.phi   > target_heading.phi)   {heading.phi   -= D_ANGLE; heading_moved=true;}
-    if (heading.theta < target_heading.theta) {heading.theta += D_ANGLE; heading_moved=true;}
-    if (heading.theta > target_heading.theta) {heading.theta -= D_ANGLE; heading_moved=true;}
+    if (heading.psi   < target_heading.psi)   {heading.psi   += d_angle; heading_moved=true;}
+    if (heading.psi   > target_heading.psi)   {heading.psi   -= d_angle; heading_moved=true;}
+    if (heading.phi   < target_heading.phi)   {heading.phi   += d_angle; heading_moved=true;}
+    if (heading.phi   > target_heading.phi)   {heading.phi   -= d_angle; heading_moved=true;}
+    if (heading.theta < target_heading.theta) {heading.theta += d_angle; heading_moved=true;}
+    if (heading.theta > target_heading.theta) {heading.theta -= d_angle; heading_moved=true;}
 
+    return heading_moved;
+}
+
+void Cube::update(Selector * cursor)
+{
+    if (this->loading_out) {
+        this->side_length -= 0.05;
+        if (this->side_length <=0) {
+            this->loading_out = false;
+            this->loading_in  = true;
+            this->load_from_disk(cursor);
+        }
+        this->update_rotation(3);
+        return;
+    }
+    if (this->loading_in) {
+        if (this->side_length <= 1) this->side_length += 0.05;
+        bool heading_moved = this->update_rotation(3);
+        if (this->side_length >= 1 && !heading_moved) {
+            this->loading_out = false;
+            this->loading_in = false;
+        }
+        return;
+    }
+    bool heading_moved = this->update_rotation(5);
     if (heading_moved) this->sort_tiles();
-
     for (int i=0; i<this->blocks.size(); ++i) {
         this->blocks.at(i)->update();
         this->blocks.at(i)->reset_moved_already();
     }
     for (int i=0; i<this->blockchains.size(); ++i) {
-        this->blockchains.at(i)->update(held_block);
+        this->blockchains.at(i)->update(cursor->get_held_block());
     }
 }
 
@@ -355,7 +379,7 @@ vertex Cube::coords_to_vertex(coords xyz)
 {
     vertex o = this->origin;
     angles a = this->get_heading_rads();
-    const double w = 1.0;
+    const double w = this->side_length;
     double space = w/(this->width-1); // 1/nw * w
     double half_width = w/2;
     double x = xyz.x * space - half_width;

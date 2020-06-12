@@ -22,14 +22,13 @@ bool Collision(int target_ind, std::vector<int> nest[])
 game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
     std::vector<int> player_nest[], std::vector<int> target_nest[], int* current_ind)
 {
-    int current_lvl = 1;
-    int old_lvl = current_lvl;
+    bool updated_lvl = false;
     Cube play_cube = Cube(rend, {0, 0, 1.5}, 5, {0,0,0}, {0,0,0});
 
     Selector select = Selector(rend, 0, &play_cube);
     LinkedBlockEditor editor = LinkedBlockEditor(rend, &play_cube);
 
-    play_cube.load_from_disk(current_lvl, &select);
+    // play_cube.load_from_disk(&select);
 
     bool quit_state = false;
     bool pause_state = false;
@@ -47,7 +46,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         win_msg_surface->w, win_msg_surface->h};
     SDL_FreeSurface(win_msg_surface);
 
-    SDL_Surface* lvl_msg_surface = TTF_RenderText_Solid(font, std::to_string(current_lvl).c_str(), {255, 255, 255});
+    SDL_Surface* lvl_msg_surface = TTF_RenderText_Solid(font, std::to_string(play_cube.get_level()).c_str(), {255, 255, 255});
     SDL_Texture* lvl_msg_texture = SDL_CreateTextureFromSurface(rend, lvl_msg_surface);
     SDL_Rect lvl_msg_rect = {WINDOW_WIDTH - lvl_msg_surface->w - 20, 20,
         lvl_msg_surface->w, lvl_msg_surface->h};
@@ -115,18 +114,21 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
                 keys[SDLK_s]=false;
             }
             if (keys[SDLK_TAB]) {
-                play_cube.load_from_disk(++current_lvl, &select);
+                play_cube.inc_level();
+                updated_lvl = true;
                 keys[SDLK_TAB]=false;
             }
             if (keys[SDLK_BACKSPACE]) {
-                play_cube.load_from_disk(--current_lvl, &select);
+                play_cube.dec_level();
+                updated_lvl = true;
                 keys[SDLK_BACKSPACE]=false;
             }
         }
 
         if(play_cube.is_win()) {
             if (keys[SDLK_RETURN]) {
-                play_cube.load_from_disk(++current_lvl, &select);
+                play_cube.inc_level();
+                updated_lvl = true;
                 keys[SDLK_RETURN]=false;
             }
         }
@@ -154,7 +156,7 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
             rotate_cube = direction::null;
         }
 
-        play_cube.update(select.get_held_block());
+        play_cube.update(&select);
         select.update();
 
         // clear the window
@@ -171,10 +173,10 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
         if (play_cube.is_win()) {
             SDL_RenderCopy(rend, win_msg_texture, NULL, &win_msg_rect);
         }
-        if (old_lvl != current_lvl) {
-            old_lvl = current_lvl;
+        if (updated_lvl) {
+            updated_lvl = false;
             SDL_DestroyTexture(lvl_msg_texture);
-            lvl_msg_surface = TTF_RenderText_Solid(font, std::to_string(current_lvl).c_str(), {255, 255, 255});
+            lvl_msg_surface = TTF_RenderText_Solid(font, std::to_string(play_cube.get_level()).c_str(), {255, 255, 255});
             lvl_msg_texture = SDL_CreateTextureFromSurface(rend, lvl_msg_surface);
             lvl_msg_rect = {WINDOW_WIDTH - lvl_msg_surface->w - 20, 20,
                 lvl_msg_surface->w, lvl_msg_surface->h};

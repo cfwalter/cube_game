@@ -12,7 +12,11 @@ class Cube {
 private:
     vertex origin;
     int width;
+    double side_length;
+    int level;
     bool edit_mode = false;
+    bool loading_out;
+    bool loading_in;
     angles heading;
     angles target_heading;
     SDL_Renderer * rend;
@@ -23,11 +27,15 @@ public:
     inline Cube(SDL_Renderer * r, vertex o, int w, angles h, angles th)
     {
         origin=o; width=w; heading=h; target_heading=th; rend=r;
+        side_length=0.0; level=1; loading_out=true; loading_in=false;
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
             tiles.push_back(new OpenTile(i,this,r));
         }
     };
+    inline int get_level() {return level;};
+    inline void inc_level() {level+=1; loading_out=true; target_heading.phi -= 180; target_heading.theta -= 180; target_heading.psi -= 180;};
+    inline void dec_level() {level-=1; loading_out=true; target_heading.phi -= 180; target_heading.theta -= 180; target_heading.psi -= 180;};
     inline vertex get_origin() {return origin;};
     inline int get_width() {return width;};
     inline angles get_heading_degs() {return heading;};
@@ -50,7 +58,8 @@ public:
     inline bool get_edit_mode() {return edit_mode;};
     inline void toggle_edit_mode() {edit_mode = !edit_mode;};
     void rotate(direction dir);
-    void update(const Block* held_block);
+    void update(Selector* cursor);
+    bool update_rotation(int d_angle);
     vertex coords_to_vertex(coords xyz);
     vertex index_to_vertex(int index);
     void edit_tile(TILE_TYPE type, int index);
@@ -61,7 +70,7 @@ public:
     void toggle_block(int index);
     void erase_block_at(int index);
     void save_to_disk(int home_ind);
-    void load_from_disk(int lvl, Selector* select);
+    void load_from_disk(Selector* select);
     void sort_tiles();
     coords get_next_coords(relative_face rf, direction dir, int current_i);
     bool index_is_edge(int index);
