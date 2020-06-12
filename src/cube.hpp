@@ -17,6 +17,7 @@ private:
     bool edit_mode = false;
     bool loading_out;
     bool loading_in;
+    int frame_count;
     angles heading;
     angles target_heading;
     SDL_Renderer * rend;
@@ -28,14 +29,16 @@ public:
     {
         origin=o; width=w; heading=h; target_heading=th; rend=r;
         side_length=0.0; level=1; loading_out=true; loading_in=false;
+        frame_count=0;
         int w3 = pow(w,3);
         for (int i=0; i<w3; ++i) {
             tiles.push_back(new OpenTile(i,this,r));
         }
     };
     inline int get_level() {return level;};
-    inline void inc_level() {level+=1; loading_out=true; target_heading.phi -= 180; target_heading.theta -= 180; target_heading.psi -= 180;};
-    inline void dec_level() {level-=1; loading_out=true; target_heading.phi -= 180; target_heading.theta -= 180; target_heading.psi -= 180;};
+    inline void inc_level() {level+=1; loading_out=true; target_heading.phi -= 90; target_heading.theta -= 90;};
+    inline void dec_level() {level-=1; loading_out=true; target_heading.phi -= 90; target_heading.theta -= 90;};
+    inline int get_frame_count() {return frame_count;};
     inline vertex get_origin() {return origin;};
     inline int get_width() {return width;};
     inline angles get_heading_degs() {return heading;};

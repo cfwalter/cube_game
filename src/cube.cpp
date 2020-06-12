@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <filesystem>
+#include <climits>
 
 /* Cube file format:
 width
@@ -82,7 +83,7 @@ void Cube::load_from_disk(Selector * select)
     readline(ifile, &line);
     std::istringstream iss(line);
     iss >> temp_index >> this->target_heading.phi >> this->target_heading.theta >> this->target_heading.psi;
-    this->heading = {this->target_heading.phi + 180, this->target_heading.theta + 180, this->target_heading.psi + 180};
+    this->heading = {this->target_heading.phi + 90, this->target_heading.theta + 90, this->target_heading.psi};
     select->set_index(temp_index);
     select->reset();
 
@@ -254,6 +255,7 @@ bool Cube::update_rotation(int d_angle)
 
 void Cube::update(Selector * cursor)
 {
+    this->frame_count = (this->frame_count + 1) % INT_MAX;
     if (this->loading_out) {
         this->side_length -= 0.05;
         if (this->side_length <=0) {
@@ -270,6 +272,7 @@ void Cube::update(Selector * cursor)
         if (this->side_length >= 1 && !heading_moved) {
             this->loading_out = false;
             this->loading_in = false;
+            this->sort_tiles();
         }
         return;
     }
@@ -308,7 +311,8 @@ void Cube::draw()
 {
 
     // draw grid
-    SDL_SetRenderDrawColor(rend, 46, 23, 60, 255);
+    double s = abs(sin(this->frame_count / 60.0));
+    SDL_SetRenderDrawColor(rend, 46*s, 23*s, 60*s, 255);
     int w1 = this->width;
     int w2 = pow(w1,2);
     int w3 = pow(w1,3);

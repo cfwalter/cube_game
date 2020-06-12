@@ -27,10 +27,11 @@ void Selector::draw()
 
     int u = FOV*vert.x/vert.z+CENTER_X;
     int v = FOV*vert.y/vert.z+CENTER_Y;
+    int v_offset = 6 * sin(this->cube->get_frame_count() / 20.0);
     int w, h;
     SDL_Texture* tex = (this->is_holding()? this->closed_texture : this->open_texture);
     SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-    SDL_Rect r = {u-20, v-20, 20, 20};
+    SDL_Rect r = {u-20, v-20 + v_offset, 20, 20};
     SDL_RenderCopy(this->rend, tex, NULL, &r);
 }
 
