@@ -60,6 +60,9 @@ public:
     inline void add_blockchain(BlockChain* bc) {blockchains.push_back(bc);};
     inline bool get_edit_mode() {return edit_mode;};
     inline void toggle_edit_mode() {edit_mode = !edit_mode;};
+    inline void increase_width(Selector * cursor) {if (this->width < 10) this->change_width(this->width+1, cursor);};
+    inline void decrease_width(Selector * cursor) {if (this->width > 2)  this->change_width(this->width-1, cursor);};
+    void change_width(int w, Selector * cursor);
     void rotate(direction dir);
     void update(Selector* cursor);
     bool update_rotation(int d_angle);

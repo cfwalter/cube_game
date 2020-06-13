@@ -118,6 +118,19 @@ void Cube::load_from_disk(Selector * select)
     ifile->close(ifile);
 }
 
+void Cube::change_width(int w, Selector * cursor)
+    {
+        this->width = w;
+        cursor->set_index(0);
+        this->blockchains.clear();
+        this->blocks.clear();
+        int w3 = pow(w,3);
+        this->tiles.clear();
+        for (int i=0; i<w3; ++i) {
+            this->tiles.push_back(new OpenTile(i,this,this->rend));
+        }
+        this->sort_tiles();
+    }
 
 Tile* Cube::get_tile_at(int index)
 {

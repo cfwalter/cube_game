@@ -123,6 +123,14 @@ game_state PlayLoop(SDL_Renderer* rend, TTF_Font* font,
                 updated_lvl = true;
                 keys[SDLK_BACKSPACE]=false;
             }
+            if (keys[SDLK_COMMA]) {
+                play_cube.decrease_width(&select);
+                keys[SDLK_COMMA]=false;
+            }
+            if (keys[SDLK_PERIOD]) {
+                play_cube.increase_width(&select);
+                keys[SDLK_PERIOD]=false;
+            }
         }
 
         if(play_cube.is_win()) {
