@@ -22,32 +22,28 @@ blockchain1.a.index blockchain1.b.index
 
 void Cube::save_to_disk(int home_ind)
 {
-    // std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    // char file_name[43];
-    // std::strftime(file_name, sizeof(file_name), "%F_%T.txt", std::localtime(&t));
     printf("saving...\n");
-    std::ofstream ofile;
-    ofile.open("out.txt", std::fstream::out);
     // width
-    ofile << this->width << std::endl;
+    std::string output = std::to_string(this->width) + '\n';
     // home & heading
-    ofile << home_ind << ' ' <<  this->heading.phi << ' ' << this->heading.theta << ' ' << this->heading.psi << ' ' << std::endl;
+    output += std::to_string(home_ind) + ' ' + std::to_string(this->heading.phi) + ' ';
+    output += std::to_string(this->heading.theta) + ' ' + std::to_string(this->heading.psi) + '\n';
     // tiles
     for (int i=0; i<this->tiles.size(); ++i) {
-        ofile << this->tiles.at(i)->get_index() << ' ' << this->tiles.at(i)->get_type() << ' ';
+        output += std::to_string(this->tiles.at(i)->get_index()) + ' ' + std::to_string(this->tiles.at(i)->get_type()) + ' ';
     }
-    ofile << std::endl;
+    output += '\n';
     // blocks
     for (int i=0; i<this->blocks.size(); ++i) {
-        ofile << this->blocks.at(i)->get_index() << ' ' << this->blocks.at(i)->get_face() << ' ';
+        output += std::to_string(this->blocks.at(i)->get_index()) + ' ' + std::to_string(this->blocks.at(i)->get_face()) + ' ';
     }
-    ofile << std::endl;
+    output += '\n';
     // blockchains
     for (int i=0; i<this->blockchains.size(); ++i) {
-        ofile << this->blockchains.at(i)->get_block_a()->get_index() << ' ';
-        ofile << this->blockchains.at(i)->get_block_b()->get_index() << std::endl;
+        output += std::to_string(this->blockchains.at(i)->get_block_a()->get_index()) + ' ';
+        output += std::to_string(this->blockchains.at(i)->get_block_b()->get_index()) + '\n';
     }
-    ofile.close();
+    SDL_SetClipboardText(output.c_str());
     printf("done.\n\n");
 };
 
